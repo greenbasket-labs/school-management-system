@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'a1d23c222aef913f5c100eb29f260486f7c3cd963c836d1eef75abdf71b46122'>;
+  StorageHashBase<'3932f6c0c2ded88d54b3b2a080f937002bb13989345d1ca916d349090b20fe01'>;
 export type ExecutionHash =
   ExecutionHashBase<'7f19f8edd2cd082e77541405c292f47c336d8d0fa4cfb09310cf86c6c7352d6d'>;
 export type ProfileHash =
@@ -1688,12 +1688,6 @@ type ContractBase = Omit<
                   readonly columns: readonly ['sessionId'];
                   readonly unique: false;
                 },
-                {
-                  readonly name: 'schoolClass_classTeacherId_idx_a6853519';
-                  readonly prefix: 'schoolClass_classTeacherId_idx';
-                  readonly columns: readonly ['classTeacherId'];
-                  readonly unique: false;
-                },
               ];
               foreignKeys: readonly [
                 {
@@ -1717,18 +1711,6 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'academicSession';
-                    readonly columns: readonly ['id'];
-                  };
-                },
-                {
-                  readonly source: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'schoolClass';
-                    readonly columns: readonly ['classTeacherId'];
-                  };
-                  readonly target: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'teacher';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -2448,12 +2430,7 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [
-                { readonly columns: readonly ['permanentId'] },
-                { readonly columns: readonly ['schoolId', 'username'] },
-                { readonly columns: readonly ['schoolId', 'email'] },
-                { readonly columns: readonly ['schoolId', 'phone'] },
-              ];
+              uniques: readonly [{ readonly columns: readonly ['permanentId'] }];
               indexes: readonly [
                 {
                   readonly name: 'user_schoolId_idx_82b454d7';
@@ -2701,17 +2678,6 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
-              readonly classHistory: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'StudentClassHistory';
-                };
-                readonly cardinality: '1:N';
-                readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['sessionId'];
-                };
-              };
               readonly classes: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3382,17 +3348,6 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
-              readonly classTeacher: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'Teacher';
-                };
-                readonly cardinality: 'N:1';
-                readonly on: {
-                  readonly localFields: readonly ['classTeacherId'];
-                  readonly targetFields: readonly ['id'];
-                };
-              };
               readonly school: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3413,17 +3368,6 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['sessionId'];
                   readonly targetFields: readonly ['id'];
-                };
-              };
-              readonly studentHistory: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'StudentClassHistory';
-                };
-                readonly cardinality: '1:N';
-                readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['classId'];
                 };
               };
               readonly students: {
@@ -3924,17 +3868,6 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
-              readonly classTeacherOf: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'SchoolClass';
-                };
-                readonly cardinality: '1:N';
-                readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['classTeacherId'];
-                };
-              };
               readonly school: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;

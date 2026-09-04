@@ -66,11 +66,11 @@ enum StudentStatus {
 model School {
   id                Int      @id @default(autoincrement())
   name              String
-  logoUrl            String?
+  logoUrl           String?
   address           String?
-  phone              String?
-  email              String?
-  website            String?
+  phone             String?
+  email             String?
+  website           String?
   registrationInfo  String?
   motto             String?
   principalName     String?
@@ -114,6 +114,10 @@ model User {
   @@index([schoolId])
   @@index([status])
   @@index([userType])
+
+  @@unique([schoolId, username])
+  @@unique([schoolId, email])
+  @@unique([schoolId, phone])
 }
 
 // ------------------------------------------------------------
@@ -178,19 +182,20 @@ model RolePermission {
 // ------------------------------------------------------------
 
 model AcademicSession {
-  id          Int                    @id @default(autoincrement())
+  id          Int                   @id @default(autoincrement())
   schoolId    Int
   name        String
-  status      AcademicSessionStatus  @default(DRAFT)
+  status      AcademicSessionStatus @default(DRAFT)
 
   startDate   DateTime
   endDate     DateTime
 
-  school      School                 @relation(fields: [schoolId], references: [id])
+  school      School                @relation(fields: [schoolId], references: [id])
   terms       Term[]
   classes     SchoolClass[]
+  classHistory StudentClassHistory[]
 
-  createdAt   TimestamptzString      @default(now())
+  createdAt   TimestamptzString     @default(now())
   updatedAt   temporal.updatedAtString()
 
   @@unique([schoolId, name])
@@ -198,13 +203,13 @@ model AcademicSession {
 }
 
 model Term {
-  id          Int          @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   sessionId   Int
   term        AcademicTerm
   name        String
   startDate   DateTime
   endDate     DateTime
-  isActive    Boolean      @default(false)
+  isActive    Boolean         @default(false)
 
   session     AcademicSession @relation(fields: [sessionId], references: [id])
 
@@ -228,11 +233,13 @@ model SchoolClass {
   classTeacherId Int?
   status         RecordStatus @default(ACTIVE)
 
-  school         School       @relation(fields: [schoolId], references: [id])
+  school         School          @relation(fields: [schoolId], references: [id])
   session        AcademicSession @relation(fields: [sessionId], references: [id])
+  classTeacher   Teacher?        @relation(fields: [classTeacherId], references: [id])
 
   students       Student[]
   subjects       ClassSubject[]
+  studentHistory StudentClassHistory[]
 
   createdAt      TimestamptzString @default(now())
   updatedAt      temporal.updatedAtString()
@@ -240,6 +247,7 @@ model SchoolClass {
   @@unique([schoolId, sessionId, name, section])
   @@index([schoolId])
   @@index([sessionId])
+  @@index([classTeacherId])
 }
 
 // ------------------------------------------------------------
@@ -263,11 +271,15 @@ model Subject {
   @@index([schoolId])
 }
 
+// ------------------------------------------------------------
+// CLASS SUBJECTS
+// ------------------------------------------------------------
+
 model ClassSubject {
-  id          Int        @id @default(autoincrement())
-  classId     Int
-  subjectId   Int
-  teacherId   Int?
+  id        Int     @id @default(autoincrement())
+  classId   Int
+  subjectId Int
+  teacherId Int?
 
   class       SchoolClass @relation(fields: [classId], references: [id])
   subject     Subject     @relation(fields: [subjectId], references: [id])
@@ -325,10 +337,10 @@ model Student {
 // ------------------------------------------------------------
 
 model Parent {
-  id             Int        @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   schoolId       Int
-  userId         Int?       @unique
-  permanentId    String     @unique
+  userId         Int?         @unique
+  permanentId    String       @unique
 
   firstName      String
   middleName     String?
@@ -339,8 +351,8 @@ model Parent {
 
   status         RecordStatus @default(ACTIVE)
 
-  school         School     @relation(fields: [schoolId], references: [id])
-  user           User?      @relation(fields: [userId], references: [id])
+  school         School        @relation(fields: [schoolId], references: [id])
+  user           User?         @relation(fields: [userId], references: [id])
   students       StudentParent[]
 
   createdAt      TimestamptzString @default(now())
@@ -349,6 +361,10 @@ model Parent {
   @@index([schoolId])
   @@index([lastName])
 }
+
+// ------------------------------------------------------------
+// STUDENT ↔ PARENT
+// ------------------------------------------------------------
 
 model StudentParent {
   id           Int     @id @default(autoincrement())
@@ -370,26 +386,27 @@ model StudentParent {
 // ------------------------------------------------------------
 
 model Teacher {
-  id          Int          @id @default(autoincrement())
-  schoolId    Int
-  userId      Int?         @unique
-  permanentId String       @unique
+  id             Int          @id @default(autoincrement())
+  schoolId       Int
+  userId         Int?         @unique
+  permanentId    String       @unique
 
-  firstName   String
-  middleName  String?
-  lastName    String
-  phone       String?
-  email       String?
-  address     String?
-  status      RecordStatus @default(ACTIVE)
+  firstName      String
+  middleName     String?
+  lastName       String
+  phone          String?
+  email          String?
+  address        String?
+  status         RecordStatus @default(ACTIVE)
 
-  school      School       @relation(fields: [schoolId], references: [id])
-  user        User?        @relation(fields: [userId], references: [id])
+  school         School        @relation(fields: [schoolId], references: [id])
+  user           User?         @relation(fields: [userId], references: [id])
 
-  subjects    ClassSubject[]
+  subjects       ClassSubject[]
+  classTeacherOf SchoolClass[]
 
-  createdAt   TimestamptzString @default(now())
-  updatedAt   temporal.updatedAtString()
+  createdAt      TimestamptzString @default(now())
+  updatedAt      temporal.updatedAtString()
 
   @@index([schoolId])
   @@index([lastName])
@@ -408,8 +425,8 @@ model StudentClassHistory {
   endDate     DateTime?
   isCurrent   Boolean  @default(false)
 
-  student     Student  @relation(fields: [studentId], references: [id])
-  class       SchoolClass @relation(fields: [classId], references: [id])
+  student     Student        @relation(fields: [studentId], references: [id])
+  class       SchoolClass    @relation(fields: [classId], references: [id])
   session     AcademicSession @relation(fields: [sessionId], references: [id])
 
   createdAt   TimestamptzString @default(now())

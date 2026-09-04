@@ -296,6 +296,21 @@
               }
             },
             "relations": {
+              "classHistory": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "sessionId"
+                  ]
+                },
+                "to": {
+                  "model": "StudentClassHistory",
+                  "namespace": "public"
+                }
+              },
               "classes": {
                 "cardinality": "1:N",
                 "on": {
@@ -1361,6 +1376,21 @@
               }
             },
             "relations": {
+              "classTeacher": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "classTeacherId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Teacher",
+                  "namespace": "public"
+                }
+              },
               "school": {
                 "cardinality": "N:1",
                 "on": {
@@ -1388,6 +1418,21 @@
                 },
                 "to": {
                   "model": "AcademicSession",
+                  "namespace": "public"
+                }
+              },
+              "studentHistory": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "classId"
+                  ]
+                },
+                "to": {
+                  "model": "StudentClassHistory",
                   "namespace": "public"
                 }
               },
@@ -2183,6 +2228,21 @@
               }
             },
             "relations": {
+              "classTeacherOf": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "classTeacherId"
+                  ]
+                },
+                "to": {
+                  "model": "SchoolClass",
+                  "namespace": "public"
+                }
+              },
               "school": {
                 "cardinality": "N:1",
                 "on": {
@@ -3567,9 +3627,33 @@
                     "namespaceId": "public",
                     "tableName": "academicSession"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "classTeacherId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "schoolClass"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "teacher"
+                  }
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "classTeacherId"
+                  ],
+                  "name": "schoolClass_classTeacherId_idx_a6853519",
+                  "prefix": "schoolClass_classTeacherId_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "schoolId"
@@ -4610,6 +4694,24 @@
                   "columns": [
                     "permanentId"
                   ]
+                },
+                {
+                  "columns": [
+                    "schoolId",
+                    "username"
+                  ]
+                },
+                {
+                  "columns": [
+                    "schoolId",
+                    "email"
+                  ]
+                },
+                {
+                  "columns": [
+                    "schoolId",
+                    "phone"
+                  ]
                 }
               ]
             },
@@ -4773,7 +4875,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "3932f6c0c2ded88d54b3b2a080f937002bb13989345d1ca916d349090b20fe01"
+    "storageHash": "a1d23c222aef913f5c100eb29f260486f7c3cd963c836d1eef75abdf71b46122"
   },
   "execution": {
     "executionHash": "7f19f8edd2cd082e77541405c292f47c336d8d0fa4cfb09310cf86c6c7352d6d",
