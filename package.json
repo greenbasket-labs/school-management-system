@@ -12,9 +12,11 @@
     "contract:emit": "prisma contract emit"
   },
   "dependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
     "@prisma/orm-postgres": "^8.0.0-rc.8",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
+    "iron-session": "^9.0.1",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8"
