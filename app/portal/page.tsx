@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../src/lib/current-user";
 import { getSchool } from "../../src/lib/school";
 import { db } from "../../src/prisma/db";
+import { getPublishedAnnouncements } from "../../src/lib/announcements";
 
 export default async function PortalPage() {
   const user = await getCurrentUser();
@@ -15,6 +16,8 @@ export default async function PortalPage() {
   if (!school) {
     throw new Error("School not found");
   }
+
+  const publishedAnnouncements = await getPublishedAnnouncements();
 
   const students = await db.orm.public.Student.all();
   const classes = await db.orm.public.SchoolClass.all();
@@ -81,6 +84,12 @@ export default async function PortalPage() {
       student.id,
     );
 
+    const announcements = publishedAnnouncements.filter(
+      (announcement) =>
+        announcement.audience === "ALL" ||
+        announcement.audience === "STUDENT",
+    );
+
     return (
       <main className="min-h-screen bg-slate-50">
         <PortalHeader
@@ -144,6 +153,10 @@ export default async function PortalPage() {
             <ResultsPanel results={results} />
           </div>
 
+          <div className="mt-6">
+            <AnnouncementsPanel announcements={announcements} />
+          </div>
+
           <div className="mt-6 grid gap-5 md:grid-cols-2">
             <PortalSection
               title="Academic"
@@ -157,7 +170,6 @@ export default async function PortalPage() {
               title="School"
               items={[
                 "Attendance summary is shown above.",
-                "School announcements will appear here when the announcements module is connected.",
                 `School: ${school.name}`,
               ]}
             />
@@ -291,6 +303,12 @@ export default async function PortalPage() {
       };
     });
 
+    const announcements = publishedAnnouncements.filter(
+      (announcement) =>
+        announcement.audience === "ALL" ||
+        announcement.audience === "PARENT",
+    );
+
     return (
       <main className="min-h-screen bg-slate-50">
         <PortalHeader
@@ -405,11 +423,14 @@ export default async function PortalPage() {
           </section>
 
           <div className="mt-6">
+            <AnnouncementsPanel announcements={announcements} />
+          </div>
+
+          <div className="mt-6">
             <PortalSection
               title="School"
               items={[
                 "Fee information is shown on each child's dashboard.",
-                "School announcements will appear here when the announcements module is connected.",
                 `School: ${school.name}`,
               ]}
             />
@@ -473,6 +494,12 @@ export default async function PortalPage() {
 
     const subjects =
       await db.orm.public.Subject.all();
+
+    const announcements = publishedAnnouncements.filter(
+      (announcement) =>
+        announcement.audience === "ALL" ||
+        announcement.audience === "TEACHER",
+    );
 
     return (
       <main className="min-h-screen bg-slate-50">
@@ -600,13 +627,16 @@ export default async function PortalPage() {
           </div>
 
           <div className="mt-6">
+            <AnnouncementsPanel announcements={announcements} />
+          </div>
+
+          <div className="mt-6">
             <PortalSection
               title="Teacher Access"
               items={[
                 "Assigned classes are shown above.",
                 "Assigned subjects are shown above.",
                 "Attendance and result-entry workflows remain available through their respective school modules.",
-                "School announcements will appear here when the announcements module is connected.",
               ]}
             />
           </div>
@@ -1105,6 +1135,77 @@ function FinanceRow({
   );
 }
 
+function AnnouncementsPanel({
+  announcements,
+}: {
+  announcements: Array<{
+    id: number;
+    title: string;
+    message: string;
+    audience: string;
+    isPublished: boolean;
+    publishedAt: unknown;
+    createdAt: unknown;
+  }>;
+}) {
+  return (
+    <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-bold text-slate-900">
+            School Announcements
+          </h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Important updates from the school.
+          </p>
+        </div>
+
+        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+          {announcements.length} announcement
+          {announcements.length === 1 ? "" : "s"}
+        </span>
+      </div>
+
+      {announcements.length === 0 ? (
+        <div className="mt-5 rounded-xl bg-slate-50 p-5 text-sm text-slate-500">
+          No published announcements are available.
+        </div>
+      ) : (
+        <div className="mt-5 space-y-4">
+          {announcements.map((announcement) => (
+            <article
+              key={announcement.id}
+              className="rounded-xl border border-slate-200 p-5"
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <h4 className="font-bold text-slate-900">
+                  {announcement.title}
+                </h4>
+
+                <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                  {announcement.audience === "ALL"
+                    ? "Everyone"
+                    : announcement.audience}
+                </span>
+              </div>
+
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-600">
+                {announcement.message}
+              </p>
+
+              {announcement.publishedAt != null && (
+                <p className="mt-4 text-xs text-slate-400">
+                  Published {formatPortalDate(announcement.publishedAt)}
+                </p>
+              )}
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PortalSection({
   title,
   items,
@@ -1173,6 +1274,19 @@ function PortalNotLinked({
       </div>
     </main>
   );
+}
+
+function formatPortalDate(value: unknown) {
+  const date = new Date(String(value));
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleString("en-NG", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
 }
 
 function formatMoney(value: number) {

@@ -121,6 +121,7 @@ model School {
 
   results           Result[]
   features          SchoolFeature[]
+  announcements     Announcement[]
 }
 
 // ------------------------------------------------------------
@@ -142,6 +143,7 @@ model User {
 
   roles             UserRole[]
   auditLogs         AuditLog[]
+  announcementsCreated Announcement[] @relation("AnnouncementCreatedBy")
 
   paymentsReceived  Payment[]
 
@@ -655,6 +657,34 @@ model AttendanceRecord {
   @@index([schoolId, attendanceDate])
   @@index([classId, attendanceDate, period])
   @@index([studentId, attendanceDate])
+}
+
+// ------------------------------------------------------------
+// ANNOUNCEMENTS
+// ------------------------------------------------------------
+model Announcement {
+  id              Int      @id @default(autoincrement())
+  schoolId        Int
+  createdByUserId Int
+
+  title           String
+  message         String
+
+  audience        String   @default("ALL")
+
+  isPublished     Boolean  @default(false)
+  publishedAt     DateTime?
+
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+
+  school          School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdBy       User     @relation("AnnouncementCreatedBy", fields: [createdByUserId], references: [id])
+
+  @@index([schoolId])
+  @@index([createdByUserId])
+  @@index([isPublished])
+  @@index([publishedAt])
 }
 
 // ------------------------------------------------------------

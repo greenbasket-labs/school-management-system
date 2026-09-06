@@ -8,6 +8,10 @@
       "model": "AcademicSession",
       "namespace": "public"
     },
+    "announcement": {
+      "model": "Announcement",
+      "namespace": "public"
+    },
     "assessmentComponent": {
       "model": "AssessmentComponent",
       "namespace": "public"
@@ -596,6 +600,148 @@
               },
               "namespaceId": "public",
               "table": "academicSession"
+            }
+          },
+          "Announcement": {
+            "fields": {
+              "audience": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdByUserId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "isPublished": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "message": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "publishedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "schoolId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "title": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "createdBy": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "createdByUserId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "school": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "schoolId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "School",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "audience": {
+                  "column": "audience"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdByUserId": {
+                  "column": "createdByUserId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isPublished": {
+                  "column": "isPublished"
+                },
+                "message": {
+                  "column": "message"
+                },
+                "publishedAt": {
+                  "column": "publishedAt"
+                },
+                "schoolId": {
+                  "column": "schoolId"
+                },
+                "title": {
+                  "column": "title"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "announcement"
             }
           },
           "AssessmentComponent": {
@@ -3109,6 +3255,21 @@
                   "namespace": "public"
                 }
               },
+              "announcements": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "schoolId"
+                  ]
+                },
+                "to": {
+                  "model": "Announcement",
+                  "namespace": "public"
+                }
+              },
               "attendanceRecords": {
                 "cardinality": "1:N",
                 "on": {
@@ -4930,6 +5091,21 @@
               }
             },
             "relations": {
+              "announcementsCreated": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "createdByUserId"
+                  ]
+                },
+                "to": {
+                  "model": "Announcement",
+                  "namespace": "public"
+                }
+              },
               "attendanceRecords": {
                 "cardinality": "1:N",
                 "on": {
@@ -5269,6 +5445,151 @@
                   ]
                 }
               ]
+            },
+            "announcement": {
+              "columns": {
+                "audience": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ALL"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "createdByUserId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "isPublished": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "message": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "publishedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "schoolId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "title": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "schoolId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "announcement"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "school"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "createdByUserId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "announcement"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "createdByUserId"
+                  ],
+                  "name": "announcement_createdByUserId_idx_93e8a540",
+                  "prefix": "announcement_createdByUserId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "isPublished"
+                  ],
+                  "name": "announcement_isPublished_idx_d7ee5985",
+                  "prefix": "announcement_isPublished_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "publishedAt"
+                  ],
+                  "name": "announcement_publishedAt_idx_36121b91",
+                  "prefix": "announcement_publishedAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "schoolId"
+                  ],
+                  "name": "announcement_schoolId_idx_82b454d7",
+                  "prefix": "announcement_schoolId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
             },
             "assessmentComponent": {
               "columns": {
@@ -9261,10 +9582,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "8885a1972cf9d3c43b09eb27f9b8dcf194d2ec380aaacb701a5a319cf13cffcf"
+    "storageHash": "a1cb2b80d40e8bac3699c87902c974027a23da188713ecf4a9f7d32ade5fc6ea"
   },
   "execution": {
-    "executionHash": "e859052a62584556dfb7f94e642a6ab22b55d722bc7d18036247b7c62adcd9b4",
+    "executionHash": "50464fa9b5ef6ce4cd2b969ab9b86cfbd4cedf3edd7484d7eaa32ddca75e94f9",
     "mutations": {
       "defaults": [
         {
@@ -9280,6 +9601,21 @@
             "column": "updatedAt",
             "namespace": "public",
             "table": "academicSession"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "announcement"
           }
         },
         {
