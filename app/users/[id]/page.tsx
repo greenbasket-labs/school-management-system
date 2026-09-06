@@ -82,7 +82,9 @@ export default async function UserProfilePage({
   const users = await db.orm.public.User.all();
 
   const user = users.find(
-    (item) => item.id === userId,
+    (item) =>
+      item.id === userId &&
+      (!school || item.schoolId === school.id),
   );
 
   if (!user) {
@@ -132,6 +134,17 @@ export default async function UserProfilePage({
   }
 
   const userRoles = await getUserRolesById(user.id);
+
+  const canEdit = await hasPermission(
+    currentUser.id,
+    "users.edit",
+  );
+
+  const canManagePortal =
+    canEdit &&
+    (user.userType === "STUDENT" ||
+      user.userType === "PARENT" ||
+      user.userType === "TEACHER");
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -337,10 +350,52 @@ export default async function UserProfilePage({
             </p>
           </section>
 
-          <div className="mt-8 flex justify-end border-t border-slate-100 pt-6">
+          {canManagePortal && (
+            <section className="mt-8 rounded-xl bg-purple-50 p-5">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                <div>
+                  <h3 className="text-sm font-semibold text-purple-900">
+                    Portal Access
+                  </h3>
+
+                  <p className="mt-2 text-sm leading-6 text-purple-800">
+                    Link this {user.userType.toLowerCase()} login account
+                    to the corresponding school record.
+                  </p>
+                </div>
+
+                <a
+                  href={`/users/${user.id}/portal-access`}
+                  className="inline-flex w-fit rounded-xl bg-purple-600 px-5 py-3 text-sm font-semibold text-white hover:bg-purple-700"
+                >
+                  Manage Portal Access
+                </a>
+              </div>
+            </section>
+          )}
+
+          <div className="mt-8 flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-6">
+            {canManagePortal && (
+              <a
+                href={`/users/${user.id}/portal-access`}
+                className="rounded-xl bg-purple-600 px-6 py-3 text-sm font-semibold text-white hover:bg-purple-700"
+              >
+                Portal Access
+              </a>
+            )}
+
+            {canEdit && (
+              <a
+                href={`/users/${user.id}/edit`}
+                className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+              >
+                Edit User
+              </a>
+            )}
+
             <a
               href="/users"
-              className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+              className="rounded-xl border border-slate-300 px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               Back to Users
             </a>

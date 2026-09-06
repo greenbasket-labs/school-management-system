@@ -88,3 +88,45 @@ export async function getActiveParents(
     (parent) => parent.status === "ACTIVE",
   );
 }
+
+export async function getParentLinks(
+  parentId: number,
+  schoolId: number,
+) {
+  const studentParents =
+    await db.orm.public.StudentParent.all();
+
+  const students =
+    await db.orm.public.Student.all();
+
+  const studentIds = studentParents
+    .filter((item) => item.parentId === parentId)
+    .map((item) => item.studentId);
+
+  return students.filter(
+    (student) =>
+      student.schoolId === schoolId &&
+      studentIds.includes(student.id),
+  );
+}
+
+export async function getStudentParents(
+  studentId: number,
+  schoolId: number,
+) {
+  const studentParents =
+    await db.orm.public.StudentParent.all();
+
+  const parents =
+    await db.orm.public.Parent.all();
+
+  const parentIds = studentParents
+    .filter((item) => item.studentId === studentId)
+    .map((item) => item.parentId);
+
+  return parents.filter(
+    (parent) =>
+      parent.schoolId === schoolId &&
+      parentIds.includes(parent.id),
+  );
+}

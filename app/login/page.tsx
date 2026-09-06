@@ -14,7 +14,15 @@ async function loginAction(formData: FormData) {
     redirect("/login?error=invalid");
   }
 
-  redirect("/dashboard");
+  if (
+  user.userType === "STUDENT" ||
+  user.userType === "PARENT" ||
+  user.userType === "TEACHER"
+) {
+  redirect("/portal");
+}
+
+redirect("/dashboard");
 }
 
 export default async function LoginPage() {

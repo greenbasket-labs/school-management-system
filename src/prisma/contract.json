@@ -60,6 +60,14 @@
       "model": "Receipt",
       "namespace": "public"
     },
+    "result": {
+      "model": "Result",
+      "namespace": "public"
+    },
+    "resultMark": {
+      "model": "ResultMark",
+      "namespace": "public"
+    },
     "role": {
       "model": "Role",
       "namespace": "public"
@@ -74,6 +82,10 @@
     },
     "schoolClass": {
       "model": "SchoolClass",
+      "namespace": "public"
+    },
+    "schoolFeature": {
+      "model": "SchoolFeature",
       "namespace": "public"
     },
     "student": {
@@ -293,6 +305,23 @@
               {
                 "name": "INACTIVE",
                 "value": "INACTIVE"
+              }
+            ]
+          },
+          "ResultStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "DRAFT",
+                "value": "DRAFT"
+              },
+              {
+                "name": "FINAL",
+                "value": "FINAL"
+              },
+              {
+                "name": "PUBLISHED",
+                "value": "PUBLISHED"
               }
             ]
           },
@@ -641,6 +670,21 @@
                 },
                 "to": {
                   "model": "ExamSubject",
+                  "namespace": "public"
+                }
+              },
+              "resultMarks": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "assessmentComponentId"
+                  ]
+                },
+                "to": {
+                  "model": "ResultMark",
                   "namespace": "public"
                 }
               }
@@ -1454,6 +1498,21 @@
                 },
                 "to": {
                   "model": "Exam",
+                  "namespace": "public"
+                }
+              },
+              "results": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "examSubjectId"
+                  ]
+                },
+                "to": {
+                  "model": "Result",
                   "namespace": "public"
                 }
               },
@@ -2443,6 +2502,336 @@
               "table": "receipt"
             }
           },
+          "Result": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "enteredByUserId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "examSubjectId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "grade": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "position": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "schoolId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ResultStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "studentId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "totalMark": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedByUserId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "enteredBy": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "enteredByUserId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "examSubject": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "examSubjectId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "ExamSubject",
+                  "namespace": "public"
+                }
+              },
+              "marks": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "resultId"
+                  ]
+                },
+                "to": {
+                  "model": "ResultMark",
+                  "namespace": "public"
+                }
+              },
+              "school": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "schoolId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "School",
+                  "namespace": "public"
+                }
+              },
+              "student": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "studentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Student",
+                  "namespace": "public"
+                }
+              },
+              "updatedBy": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "updatedByUserId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "enteredByUserId": {
+                  "column": "enteredByUserId"
+                },
+                "examSubjectId": {
+                  "column": "examSubjectId"
+                },
+                "grade": {
+                  "column": "grade"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "position": {
+                  "column": "position"
+                },
+                "schoolId": {
+                  "column": "schoolId"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "studentId": {
+                  "column": "studentId"
+                },
+                "totalMark": {
+                  "column": "totalMark"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "updatedByUserId": {
+                  "column": "updatedByUserId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "result"
+            }
+          },
+          "ResultMark": {
+            "fields": {
+              "assessmentComponentId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "mark": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "resultId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "assessmentComponent": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "assessmentComponentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "AssessmentComponent",
+                  "namespace": "public"
+                }
+              },
+              "result": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "resultId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Result",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "assessmentComponentId": {
+                  "column": "assessmentComponentId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "mark": {
+                  "column": "mark"
+                },
+                "resultId": {
+                  "column": "resultId"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "resultMark"
+            }
+          },
           "Role": {
             "fields": {
               "createdAt": {
@@ -2780,6 +3169,21 @@
                   "namespace": "public"
                 }
               },
+              "features": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "schoolId"
+                  ]
+                },
+                "to": {
+                  "model": "SchoolFeature",
+                  "namespace": "public"
+                }
+              },
               "feeAssignments": {
                 "cardinality": "1:N",
                 "on": {
@@ -2852,6 +3256,21 @@
                 },
                 "to": {
                   "model": "Receipt",
+                  "namespace": "public"
+                }
+              },
+              "results": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "schoolId"
+                  ]
+                },
+                "to": {
+                  "model": "Result",
                   "namespace": "public"
                 }
               },
@@ -3202,6 +3621,153 @@
               "table": "schoolClass"
             }
           },
+          "SchoolFeature": {
+            "fields": {
+              "category": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "description": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "enabled": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "featureCode": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "isCore": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "schoolId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "sortOrder": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "school": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "schoolId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "School",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "category": {
+                  "column": "category"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "description": {
+                  "column": "description"
+                },
+                "enabled": {
+                  "column": "enabled"
+                },
+                "featureCode": {
+                  "column": "featureCode"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isCore": {
+                  "column": "isCore"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "schoolId": {
+                  "column": "schoolId"
+                },
+                "sortOrder": {
+                  "column": "sortOrder"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "schoolFeature"
+            }
+          },
           "Student": {
             "fields": {
               "address": {
@@ -3424,6 +3990,21 @@
                 },
                 "to": {
                   "model": "Payment",
+                  "namespace": "public"
+                }
+              },
+              "results": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "studentId"
+                  ]
+                },
+                "to": {
+                  "model": "Result",
                   "namespace": "public"
                 }
               },
@@ -3826,6 +4407,21 @@
                 },
                 "to": {
                   "model": "ClassSubject",
+                  "namespace": "public"
+                }
+              },
+              "examSubjects": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "subjectId"
+                  ]
+                },
+                "to": {
+                  "model": "ExamSubject",
                   "namespace": "public"
                 }
               },
@@ -4376,6 +4972,36 @@
                 },
                 "to": {
                   "model": "Payment",
+                  "namespace": "public"
+                }
+              },
+              "resultsEntered": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "enteredByUserId"
+                  ]
+                },
+                "to": {
+                  "model": "Result",
+                  "namespace": "public"
+                }
+              },
+              "resultsUpdated": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "updatedByUserId"
+                  ]
+                },
+                "to": {
+                  "model": "Result",
                   "namespace": "public"
                 }
               },
@@ -6504,6 +7130,347 @@
                 }
               ]
             },
+            "result": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('DRAFT', 'FINAL', 'PUBLISHED')",
+                  "name": "result_status_check_7bcb02bb",
+                  "prefix": "result_status_check"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "enteredByUserId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "examSubjectId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "grade": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "position": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "schoolId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "DRAFT"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ResultStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "studentId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "totalMark": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "updatedByUserId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "schoolId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "result"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "school"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "examSubjectId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "result"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "examSubject"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "studentId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "result"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "student"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "enteredByUserId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "result"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "updatedByUserId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "result"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "enteredByUserId"
+                  ],
+                  "name": "result_enteredByUserId_idx_35b27bfc",
+                  "prefix": "result_enteredByUserId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "examSubjectId"
+                  ],
+                  "name": "result_examSubjectId_idx_1db5019a",
+                  "prefix": "result_examSubjectId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "schoolId"
+                  ],
+                  "name": "result_schoolId_idx_82b454d7",
+                  "prefix": "result_schoolId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "status"
+                  ],
+                  "name": "result_status_idx_e98638ab",
+                  "prefix": "result_status_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "studentId"
+                  ],
+                  "name": "result_studentId_idx_bf255322",
+                  "prefix": "result_studentId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "updatedByUserId"
+                  ],
+                  "name": "result_updatedByUserId_idx_15d89a27",
+                  "prefix": "result_updatedByUserId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "examSubjectId",
+                    "studentId"
+                  ]
+                }
+              ]
+            },
+            "resultMark": {
+              "columns": {
+                "assessmentComponentId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "mark": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false
+                },
+                "resultId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "resultId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "resultMark"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "result"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "assessmentComponentId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "resultMark"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "assessmentComponent"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "assessmentComponentId"
+                  ],
+                  "name": "resultMark_assessmentComponentId_idx_23987aaf",
+                  "prefix": "resultMark_assessmentComponentId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "resultId"
+                  ],
+                  "name": "resultMark_resultId_idx_d2cb6dbf",
+                  "prefix": "resultMark_resultId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "resultId",
+                    "assessmentComponentId"
+                  ]
+                }
+              ]
+            },
             "role": {
               "columns": {
                 "createdAt": {
@@ -6893,6 +7860,152 @@
                     "sessionId",
                     "name",
                     "section"
+                  ]
+                }
+              ]
+            },
+            "schoolFeature": {
+              "columns": {
+                "category": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "description": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "enabled": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "featureCode": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "isCore": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "schoolId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "sortOrder": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "AVAILABLE"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "schoolId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "schoolFeature"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "school"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "enabled"
+                  ],
+                  "name": "schoolFeature_enabled_idx_7f014af8",
+                  "prefix": "schoolFeature_enabled_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "schoolId"
+                  ],
+                  "name": "schoolFeature_schoolId_idx_82b454d7",
+                  "prefix": "schoolFeature_schoolId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "status"
+                  ],
+                  "name": "schoolFeature_status_idx_e98638ab",
+                  "prefix": "schoolFeature_status_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "schoolId",
+                    "featureCode"
                   ]
                 }
               ]
@@ -8102,6 +9215,14 @@
                 "INACTIVE"
               ]
             },
+            "ResultStatus": {
+              "kind": "valueSet",
+              "values": [
+                "DRAFT",
+                "FINAL",
+                "PUBLISHED"
+              ]
+            },
             "StudentStatus": {
               "kind": "valueSet",
               "values": [
@@ -8140,10 +9261,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "5707633ae5cd832f18796c05a7bfa1f609586ec2ebbc545dab9cc444c9fde6f7"
+    "storageHash": "8885a1972cf9d3c43b09eb27f9b8dcf194d2ec380aaacb701a5a319cf13cffcf"
   },
   "execution": {
-    "executionHash": "2ea9faa4d4eac681b4bcd73fecdd74dbd2d729a5e9fbebe6a939453cf6febf5b",
+    "executionHash": "e859052a62584556dfb7f94e642a6ab22b55d722bc7d18036247b7c62adcd9b4",
     "mutations": {
       "defaults": [
         {
@@ -8338,6 +9459,36 @@
           "ref": {
             "column": "updatedAt",
             "namespace": "public",
+            "table": "result"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "resultMark"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
             "table": "role"
           }
         },
@@ -8369,6 +9520,21 @@
             "column": "updatedAt",
             "namespace": "public",
             "table": "schoolClass"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "schoolFeature"
           }
         },
         {

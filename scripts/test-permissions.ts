@@ -1,43 +1,19 @@
-import { db } from "../src/prisma/db";
-import {
-  getUserRoles,
-  getUserPermissions,
-  hasPermission,
-} from "../src/lib/permissions";
+import { hasPermission } from "../src/lib/permissions";
 
 async function main() {
-  const userId = 1;
+  console.log("USER 1 users.create:", await hasPermission(1, "users.create"));
+  console.log("USER 1 users.edit:", await hasPermission(1, "users.edit"));
 
-  const roles = await getUserRoles(userId);
-  const permissions = await getUserPermissions(userId);
+  console.log("USER 2 users.create:", await hasPermission(2, "users.create"));
+  console.log("USER 2 users.edit:", await hasPermission(2, "users.edit"));
 
-  console.log(
-    "ROLES:",
-    roles.map((role) => role.name),
-  );
+  console.log("USER 2 attendance.mark:", await hasPermission(2, "attendance.mark"));
+  console.log("USER 2 results.enter:", await hasPermission(2, "results.enter"));
 
-  console.log("PERMISSION COUNT:", permissions.length);
-
-  console.log(
-    "students.create:",
-    await hasPermission(userId, "students.create"),
-  );
-
-  console.log(
-    "payments.create:",
-    await hasPermission(userId, "payments.create"),
-  );
-
-  console.log(
-    "audit.view:",
-    await hasPermission(userId, "audit.view"),
-  );
-
-  await db.close();
+  process.exit(0);
 }
 
-main().catch(async (error) => {
+main().catch((error) => {
   console.error(error);
-  await db.close();
   process.exit(1);
 });

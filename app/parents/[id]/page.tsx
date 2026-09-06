@@ -41,6 +41,12 @@ function formatDate(value: unknown): string {
   return dateText;
 }
 
+function formatRelationship(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 export default async function ParentProfilePage({
   params,
 }: {
@@ -71,18 +77,31 @@ export default async function ParentProfilePage({
   const students =
     await db.orm.public.Student.all();
 
-  const linkedStudentIds = studentParents
-    .filter(
-      (item) =>
-        item.parentId === parent.id,
-    )
-    .map((item) => item.studentId);
-
-  const linkedStudents = students.filter(
-    (student) =>
-      student.schoolId === actor.schoolId &&
-      linkedStudentIds.includes(student.id),
+  const linkedRecords = studentParents.filter(
+    (item) => item.parentId === parent.id,
   );
+
+  const linkedStudentIds = linkedRecords.map(
+    (item) => item.studentId,
+  );
+
+  const linkedStudents = students
+    .filter(
+      (student) =>
+        student.schoolId === actor.schoolId &&
+        linkedStudentIds.includes(student.id),
+    )
+    .map((student) => {
+      const relationship = linkedRecords.find(
+        (item) => item.studentId === student.id,
+      );
+
+      return {
+        student,
+        relationship: relationship?.relationship ?? "OTHER",
+        isPrimary: relationship?.isPrimary ?? false,
+      };
+    });
 
   let canEdit = false;
 
@@ -169,6 +188,7 @@ export default async function ParentProfilePage({
                 <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Permanent ID
                 </dt>
+
                 <dd className="mt-1 text-sm font-medium text-slate-900">
                   {parent.permanentId}
                 </dd>
@@ -178,6 +198,7 @@ export default async function ParentProfilePage({
                 <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Full Name
                 </dt>
+
                 <dd className="mt-1 text-sm text-slate-700">
                   {fullName}
                 </dd>
@@ -187,6 +208,7 @@ export default async function ParentProfilePage({
                 <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Phone
                 </dt>
+
                 <dd className="mt-1 text-sm text-slate-700">
                   {parent.phone ?? "—"}
                 </dd>
@@ -196,6 +218,7 @@ export default async function ParentProfilePage({
                 <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Email
                 </dt>
+
                 <dd className="mt-1 text-sm text-slate-700">
                   {parent.email ?? "—"}
                 </dd>
@@ -205,6 +228,7 @@ export default async function ParentProfilePage({
                 <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Address
                 </dt>
+
                 <dd className="mt-1 text-sm text-slate-700">
                   {parent.address ?? "—"}
                 </dd>
@@ -214,6 +238,7 @@ export default async function ParentProfilePage({
                 <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Status
                 </dt>
+
                 <dd className="mt-1 text-sm text-slate-700">
                   {parent.status}
                 </dd>
@@ -223,6 +248,7 @@ export default async function ParentProfilePage({
                 <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Created
                 </dt>
+
                 <dd className="mt-1 text-sm text-slate-700">
                   {formatDate(parent.createdAt)}
                 </dd>
@@ -255,41 +281,58 @@ export default async function ParentProfilePage({
                   </p>
 
                   <p className="mt-1 text-sm text-slate-500">
-                    Student linking will be added to the parent
-                    management workflow.
+                    Use the student profile to link this parent or guardian.
                   </p>
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
-                  {linkedStudents.map((student) => (
-                    <div
-                      key={student.id}
-                      className="flex items-center justify-between gap-4 p-4"
-                    >
-                      <div>
-                        <p className="font-semibold text-slate-900">
-                          {[
-                            student.firstName,
-                            student.middleName,
-                            student.lastName,
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
-                        </p>
-
-                        <p className="mt-1 text-xs text-slate-500">
-                          {student.permanentId}
-                        </p>
-                      </div>
-
-                      <Link
-                        href={`/students/${student.id}`}
-                        className="text-sm font-semibold text-slate-900 hover:underline"
+                  {linkedStudents.map(
+                    ({
+                      student,
+                      relationship,
+                      isPrimary,
+                    }) => (
+                      <div
+                        key={student.id}
+                        className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"
                       >
-                        View
-                      </Link>
-                    </div>
-                  ))}
+                        <div>
+                          <p className="font-semibold text-slate-900">
+                            {[
+                              student.firstName,
+                              student.middleName,
+                              student.lastName,
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                          </p>
+
+                          <p className="mt-1 text-xs text-slate-500">
+                            {student.permanentId}
+                          </p>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                              {formatRelationship(relationship)}
+                            </span>
+
+                            {isPrimary ? (
+                              <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                                Primary Guardian
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+
+                        <Link
+                          href={`/students/${student.id}`}
+                          className="text-sm font-semibold text-slate-900 hover:underline"
+                        >
+                          View Student
+                        </Link>
+                      </div>
+                    ),
+                  )}
                 </div>
               )}
             </div>
@@ -302,24 +345,28 @@ export default async function ParentProfilePage({
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Student linking and portal account management will be
-            connected as the parent module is completed.
+            Manage student relationships from the student profile.
           </p>
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <Link
+              href="/students"
+              className="rounded-lg border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300 hover:bg-white"
+            >
               <p className="font-semibold text-slate-900">
-                Students
+                Student Relationships
               </p>
+
               <p className="mt-1 text-sm text-slate-500">
-                Link one or more students to this parent.
+                Link parents and guardians to students and set the primary guardian.
               </p>
-            </div>
+            </Link>
 
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
               <p className="font-semibold text-slate-900">
                 Portal Account
               </p>
+
               <p className="mt-1 text-sm text-slate-500">
                 Parent portal access will be connected later.
               </p>
