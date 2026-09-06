@@ -1,4 +1,5 @@
 import { db } from "../prisma/db";
+import { writeAuditLog } from "./audit";
 
 export async function getTeachers(schoolId: number) {
   const teachers = await db.orm.public.Teacher.all();
@@ -146,15 +147,35 @@ export async function createTeacher(input: {
     highestNumber + 1,
   ).padStart(5, "0")}`;
 
-  return db.orm.public.Teacher.create({
+  const teacher =
+    await db.orm.public.Teacher.create({
+      schoolId: school.id,
+      permanentId,
+      firstName,
+      middleName,
+      lastName,
+      phone,
+      email,
+      address,
+      status,
+    });
+
+  await writeAuditLog({
     schoolId: school.id,
-    permanentId,
-    firstName,
-    middleName,
-    lastName,
-    phone,
-    email,
-    address,
-    status,
+    action: "CREATE",
+    entity: "Teacher",
+    entityId: teacher.id,
+    newValue: {
+      permanentId: teacher.permanentId,
+      firstName: teacher.firstName,
+      middleName: teacher.middleName,
+      lastName: teacher.lastName,
+      phone: teacher.phone,
+      email: teacher.email,
+      address: teacher.address,
+      status: teacher.status,
+    },
   });
+
+  return teacher;
 }

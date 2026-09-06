@@ -45,6 +45,24 @@ async function updateUserAction(
     throw new Error("Permission denied: users.edit");
   }
 
+  const school = await getSchool();
+
+  if (!school) {
+    throw new Error("School not found");
+  }
+
+  const users = await db.orm.public.User.all();
+
+  const user = users.find(
+    (item) =>
+      item.id === userId &&
+      item.schoolId === school.id,
+  );
+
+  if (!user) {
+    throw new Error("User not found in this school");
+  }
+
   const name = String(formData.get("name") ?? "").trim();
 
   const userType = String(
@@ -96,7 +114,10 @@ async function updateUserAction(
   }
 
   await db.orm.public.User
-    .where({ id: userId })
+    .where({
+      id: userId,
+      schoolId: school.id,
+    })
     .update({
       name,
       userType,
@@ -158,10 +179,17 @@ export default async function EditUserPage({
   }
 
   const school = await getSchool();
+
+  if (!school) {
+    notFound();
+  }
+
   const users = await db.orm.public.User.all();
 
   const user = users.find(
-    (item) => item.id === userId,
+    (item) =>
+      item.id === userId &&
+      item.schoolId === school.id,
   );
 
   if (!user) {
@@ -174,7 +202,7 @@ export default async function EditUserPage({
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-sm font-semibold text-blue-600">
-              {school?.name ?? "School Management System"}
+              {school.name}
             </p>
 
             <h1 className="mt-1 text-2xl font-bold text-slate-900">

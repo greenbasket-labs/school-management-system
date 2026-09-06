@@ -15,14 +15,14 @@ async function loginAction(formData: FormData) {
   }
 
   if (
-  user.userType === "STUDENT" ||
-  user.userType === "PARENT" ||
-  user.userType === "TEACHER"
-) {
-  redirect("/portal");
-}
+    user.userType === "STUDENT" ||
+    user.userType === "PARENT" ||
+    user.userType === "TEACHER"
+  ) {
+    redirect("/portal");
+  }
 
-redirect("/dashboard");
+  redirect("/dashboard");
 }
 
 export default async function LoginPage() {
@@ -42,7 +42,8 @@ export default async function LoginPage() {
             </h1>
 
             <p className="mt-2 text-sm text-slate-500">
-              {school?.motto ?? "Sign in to access your school dashboard."}
+              {school?.motto ??
+                "Sign in to access your school dashboard."}
             </p>
           </div>
 
@@ -83,6 +84,15 @@ export default async function LoginPage() {
                 required
                 className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
+
+              <div className="mt-2 text-right">
+                <a
+                  href="/forgot-password"
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                >
+                  Forgot password?
+                </a>
+              </div>
             </div>
 
             <button

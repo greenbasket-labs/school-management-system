@@ -1,4 +1,5 @@
 import { db } from "../prisma/db";
+import { writeAuditLog } from "./audit";
 
 export async function getStudents() {
   return db.orm.public.Student.all();
@@ -117,18 +118,39 @@ export async function createStudent(input: {
     highestNumber + 1,
   ).padStart(5, "0")}`;
 
-  return db.orm.public.Student.create({
+  const student =
+    await db.orm.public.Student.create({
+      schoolId: school.id,
+      permanentId,
+      firstName,
+      middleName,
+      lastName,
+      gender,
+      dateOfBirth: input.dateOfBirth
+        ? new Date(input.dateOfBirth)
+        : null,
+      phone: input.phone?.trim() || null,
+      address: input.address?.trim() || null,
+      status: "ACTIVE",
+    });
+
+  await writeAuditLog({
     schoolId: school.id,
-    permanentId,
-    firstName,
-    middleName,
-    lastName,
-    gender,
-    dateOfBirth: input.dateOfBirth
-      ? new Date(input.dateOfBirth)
-      : null,
-    phone: input.phone?.trim() || null,
-    address: input.address?.trim() || null,
-    status: "ACTIVE",
+    action: "CREATE",
+    entity: "Student",
+    entityId: student.id,
+    newValue: {
+      permanentId: student.permanentId,
+      firstName: student.firstName,
+      middleName: student.middleName,
+      lastName: student.lastName,
+      gender: student.gender,
+      dateOfBirth: student.dateOfBirth,
+      phone: student.phone,
+      address: student.address,
+      status: student.status,
+    },
   });
+
+  return student;
 }

@@ -1,4 +1,5 @@
 import { db } from "../prisma/db";
+import { writeAuditLog } from "./audit";
 
 export async function getStudentParents(
   studentId: number,
@@ -113,12 +114,28 @@ export async function linkParentToStudent(
     }
   }
 
-  return db.orm.public.StudentParent.create({
-    studentId,
-    parentId,
-    relationship: cleanRelationship,
-    isPrimary,
+  const created =
+    await db.orm.public.StudentParent.create({
+      studentId,
+      parentId,
+      relationship: cleanRelationship,
+      isPrimary,
+    });
+
+  await writeAuditLog({
+    schoolId: student.schoolId,
+    action: "CREATE",
+    entity: "StudentParent",
+    entityId: created.id,
+    newValue: {
+      studentId,
+      parentId,
+      relationship: cleanRelationship,
+      isPrimary,
+    },
   });
+
+  return created;
 }
 
 export async function updateStudentParentLink(
@@ -163,12 +180,41 @@ export async function updateStudentParentLink(
     }
   }
 
-  return db.orm.public.StudentParent.where({
-    id: existing.id,
-  }).update({
-    relationship: cleanRelationship,
-    isPrimary,
-  });
+  const updated =
+    await db.orm.public.StudentParent.where({
+      id: existing.id,
+    }).update({
+      relationship: cleanRelationship,
+      isPrimary,
+    });
+
+  const students = await db.orm.public.Student.all();
+  const student = students.find(
+    (item) => item.id === existing.studentId,
+  );
+
+  if (student) {
+    await writeAuditLog({
+      schoolId: student.schoolId,
+      action: "UPDATE",
+      entity: "StudentParent",
+      entityId: existing.id,
+      oldValue: {
+        studentId: existing.studentId,
+        parentId: existing.parentId,
+        relationship: existing.relationship,
+        isPrimary: existing.isPrimary,
+      },
+      newValue: {
+        studentId: existing.studentId,
+        parentId: existing.parentId,
+        relationship: cleanRelationship,
+        isPrimary,
+      },
+    });
+  }
+
+  return updated;
 }
 
 export async function unlinkParentFromStudent(
@@ -189,6 +235,26 @@ export async function unlinkParentFromStudent(
   await db.orm.public.StudentParent.where({
     id: existing.id,
   }).delete();
+
+  const students = await db.orm.public.Student.all();
+  const student = students.find(
+    (item) => item.id === existing.studentId,
+  );
+
+  if (student) {
+    await writeAuditLog({
+      schoolId: student.schoolId,
+      action: "DELETE",
+      entity: "StudentParent",
+      entityId: existing.id,
+      oldValue: {
+        studentId: existing.studentId,
+        parentId: existing.parentId,
+        relationship: existing.relationship,
+        isPrimary: existing.isPrimary,
+      },
+    });
+  }
 
   return true;
 }

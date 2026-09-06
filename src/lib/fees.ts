@@ -1,6 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { db } from "../prisma/db";
 import { hasPermission } from "./permissions";
+import { writeAuditLog } from "./audit";
 
 function requirePositiveAmount(amount: number) {
   if (!Number.isFinite(amount) || amount <= 0) {
@@ -81,12 +82,26 @@ export async function createFeeType(
     );
   }
 
-  return db.orm.public.FeeType.create({
+  const feeType = await db.orm.public.FeeType.create({
     schoolId,
     name: normalizedName,
     description: description?.trim() || null,
     status: "ACTIVE",
   });
+
+  await writeAuditLog({
+    schoolId,
+    action: "CREATE",
+    entity: "FeeType",
+    entityId: feeType.id,
+    newValue: {
+      name: normalizedName,
+      description: description?.trim() || null,
+      status: "ACTIVE",
+    },
+  });
+
+  return feeType;
 }
 
 export async function updateFeeType(
@@ -129,12 +144,31 @@ export async function updateFeeType(
     );
   }
 
-  return db.orm.public.FeeType.where({
+  const updated = await db.orm.public.FeeType.where({
     id: feeTypeId,
   }).update({
     name: normalizedName,
     description: description?.trim() || null,
   });
+
+  await writeAuditLog({
+    schoolId,
+    action: "UPDATE",
+    entity: "FeeType",
+    entityId: feeTypeId,
+    oldValue: {
+      name: feeType.name,
+      description: feeType.description,
+      status: feeType.status,
+    },
+    newValue: {
+      name: normalizedName,
+      description: description?.trim() || null,
+      status: feeType.status,
+    },
+  });
+
+  return updated;
 }
 
 export async function setFeeTypeStatus(
@@ -151,11 +185,26 @@ export async function setFeeTypeStatus(
     throw new Error("Fee type not found.");
   }
 
-  return db.orm.public.FeeType.where({
+  const updated = await db.orm.public.FeeType.where({
     id: feeTypeId,
   }).update({
     status,
   });
+
+  await writeAuditLog({
+    schoolId,
+    action: "UPDATE",
+    entity: "FeeType",
+    entityId: feeTypeId,
+    oldValue: {
+      status: feeType.status,
+    },
+    newValue: {
+      status,
+    },
+  });
+
+  return updated;
 }
 
 export async function getStudentsForFeeAssignment(
@@ -380,7 +429,7 @@ export async function createFeeAssignment(input: {
       )
     : null;
 
-  return db.orm.public.FeeAssignment.create({
+  const assignment = await db.orm.public.FeeAssignment.create({
     schoolId: input.schoolId,
     studentId: input.studentId,
     feeTypeId: input.feeTypeId,
@@ -393,6 +442,26 @@ export async function createFeeAssignment(input: {
       input.description?.trim() || null,
     status: "ACTIVE",
   });
+
+  await writeAuditLog({
+    schoolId: input.schoolId,
+    action: "CREATE",
+    entity: "FeeAssignment",
+    entityId: assignment.id,
+    newValue: {
+      studentId: input.studentId,
+      feeTypeId: input.feeTypeId,
+      sessionId: input.sessionId,
+      termId: input.termId ?? null,
+      classId: input.classId ?? null,
+      amount: input.amount,
+      dueDate: input.dueDate ?? null,
+      description: input.description?.trim() || null,
+      status: "ACTIVE",
+    },
+  });
+
+  return assignment;
 }
 
 export async function getStudentFeeAssignments(

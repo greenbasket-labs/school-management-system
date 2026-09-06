@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 
 export type SessionData = {
   userId?: number;
+  sessionKey?: string;
 };
 
 const SESSION_COOKIE = "school_session";

@@ -1,4 +1,5 @@
 import { db } from "../prisma/db";
+import { writeAuditLog } from "./audit";
 
 export async function getSchoolFeatures() {
   const schools = await db.orm.public.School.all();
@@ -41,6 +42,19 @@ export async function updateFeature(
     .update({
       enabled,
     });
+
+  await writeAuditLog({
+    schoolId: feature.schoolId,
+    action: "UPDATE",
+    entity: "SchoolFeature",
+    entityId: feature.id,
+    oldValue: {
+      enabled: feature.enabled,
+    },
+    newValue: {
+      enabled,
+    },
+  });
 
   return true;
 }

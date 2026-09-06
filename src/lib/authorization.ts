@@ -1,8 +1,17 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "./current-user";
+import {
+  getCurrentUser,
+  isCurrentSessionLocked,
+} from "./current-user";
 import { hasPermission } from "./permissions";
 
 export async function requireAuth() {
+  const locked = await isCurrentSessionLocked();
+
+  if (locked) {
+    redirect("/unlock");
+  }
+
   const user = await getCurrentUser();
 
   if (!user) {

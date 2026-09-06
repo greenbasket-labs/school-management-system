@@ -1,13 +1,18 @@
 import { db } from "../prisma/db";
+import { writeAuditLog } from "./audit";
 
-export async function getAnnouncements() {
+async function getSchoolId() {
   const schools = await db.orm.public.School.all();
 
   if (schools.length === 0) {
     throw new Error("School not found");
   }
 
-  const schoolId = schools[0].id;
+  return schools[0].id;
+}
+
+export async function getAnnouncements() {
+  const schoolId = await getSchoolId();
 
   const announcements = await db.orm.public.Announcement.all();
 
@@ -52,11 +57,7 @@ export async function createAnnouncement(
   message: string,
   audience = "ALL",
 ) {
-  const schools = await db.orm.public.School.all();
-
-  if (schools.length === 0) {
-    throw new Error("School not found");
-  }
+  const schoolId = await getSchoolId();
 
   const cleanTitle = title.trim();
   const cleanMessage = message.trim();
@@ -75,22 +76,38 @@ export async function createAnnouncement(
   const user = users.find(
     (item) =>
       item.id === createdByUserId &&
-      item.schoolId === schools[0].id,
+      item.schoolId === schoolId,
   );
 
   if (!user) {
     throw new Error("User not found");
   }
 
-  return db.orm.public.Announcement.create({
-    schoolId: schools[0].id,
-    createdByUserId,
-    title: cleanTitle,
-    message: cleanMessage,
-    audience: cleanAudience,
-    isPublished: false,
-    publishedAt: null,
+  const announcement =
+    await db.orm.public.Announcement.create({
+      schoolId,
+      createdByUserId,
+      title: cleanTitle,
+      message: cleanMessage,
+      audience: cleanAudience,
+      isPublished: false,
+      publishedAt: null,
+    });
+
+  await writeAuditLog({
+    schoolId,
+    userId: createdByUserId,
+    action: "CREATE",
+    entity: "Announcement",
+    entityId: announcement.id,
+    newValue: {
+      title: cleanTitle,
+      audience: cleanAudience,
+      isPublished: false,
+    },
   });
+
+  return announcement;
 }
 
 export async function updateAnnouncement(
@@ -118,13 +135,33 @@ export async function updateAnnouncement(
     throw new Error("Announcement message is required");
   }
 
-  return db.orm.public.Announcement.where({
-    id: announcementId,
-  }).update({
-    title: cleanTitle,
-    message: cleanMessage,
-    audience: cleanAudience,
+  const updated =
+    await db.orm.public.Announcement.where({
+      id: announcementId,
+    }).update({
+      title: cleanTitle,
+      message: cleanMessage,
+      audience: cleanAudience,
+    });
+
+  await writeAuditLog({
+    schoolId: announcement.schoolId,
+    action: "UPDATE",
+    entity: "Announcement",
+    entityId: announcementId,
+    oldValue: {
+      title: announcement.title,
+      message: announcement.message,
+      audience: announcement.audience,
+    },
+    newValue: {
+      title: cleanTitle,
+      message: cleanMessage,
+      audience: cleanAudience,
+    },
   });
+
+  return updated;
 }
 
 export async function publishAnnouncement(
@@ -137,12 +174,28 @@ export async function publishAnnouncement(
     throw new Error("Announcement not found");
   }
 
-  return db.orm.public.Announcement.where({
-    id: announcementId,
-  }).update({
-    isPublished: true,
-    publishedAt: new Date(),
+  const updated =
+    await db.orm.public.Announcement.where({
+      id: announcementId,
+    }).update({
+      isPublished: true,
+      publishedAt: new Date(),
+    });
+
+  await writeAuditLog({
+    schoolId: announcement.schoolId,
+    action: "PUBLISH",
+    entity: "Announcement",
+    entityId: announcementId,
+    oldValue: {
+      isPublished: announcement.isPublished,
+    },
+    newValue: {
+      isPublished: true,
+    },
   });
+
+  return updated;
 }
 
 export async function unpublishAnnouncement(
@@ -155,12 +208,28 @@ export async function unpublishAnnouncement(
     throw new Error("Announcement not found");
   }
 
-  return db.orm.public.Announcement.where({
-    id: announcementId,
-  }).update({
-    isPublished: false,
-    publishedAt: null,
+  const updated =
+    await db.orm.public.Announcement.where({
+      id: announcementId,
+    }).update({
+      isPublished: false,
+      publishedAt: null,
+    });
+
+  await writeAuditLog({
+    schoolId: announcement.schoolId,
+    action: "UNPUBLISH",
+    entity: "Announcement",
+    entityId: announcementId,
+    oldValue: {
+      isPublished: announcement.isPublished,
+    },
+    newValue: {
+      isPublished: false,
+    },
   });
+
+  return updated;
 }
 
 export async function deleteAnnouncement(
@@ -173,7 +242,22 @@ export async function deleteAnnouncement(
     throw new Error("Announcement not found");
   }
 
-  return db.orm.public.Announcement.where({
-    id: announcementId,
-  }).delete();
+  const deleted =
+    await db.orm.public.Announcement.where({
+      id: announcementId,
+    }).delete();
+
+  await writeAuditLog({
+    schoolId: announcement.schoolId,
+    action: "DELETE",
+    entity: "Announcement",
+    entityId: announcementId,
+    oldValue: {
+      title: announcement.title,
+      audience: announcement.audience,
+      isPublished: announcement.isPublished,
+    },
+  });
+
+  return deleted;
 }

@@ -1,6 +1,7 @@
 import { db } from "../prisma/db";
 import { hashPassword } from "./auth";
 import { getSchool } from "./school";
+import { writeAuditLog } from "./audit";
 
 const PREFIXES: Record<string, string> = {
   OWNER: "OWN",
@@ -62,7 +63,10 @@ export async function createUser(input: {
     const match = user.permanentId.match(pattern);
 
     if (match) {
-      highestNumber = Math.max(highestNumber, Number(match[1]));
+      highestNumber = Math.max(
+        highestNumber,
+        Number(match[1]),
+      );
     }
   }
 
@@ -82,6 +86,22 @@ export async function createUser(input: {
     name,
     userType: input.userType,
     status: "ACTIVE",
+  });
+
+  await writeAuditLog({
+    schoolId: school.id,
+    action: "CREATE",
+    entity: "User",
+    entityId: user.id,
+    newValue: {
+      permanentId: user.permanentId,
+      name: user.name,
+      userType: user.userType,
+      email: user.email,
+      phone: user.phone,
+      username: user.username,
+      status: user.status,
+    },
   });
 
   return user;

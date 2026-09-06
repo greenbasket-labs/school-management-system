@@ -1,6 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { db } from "../prisma/db";
 import { hasPermission } from "./permissions";
+import { writeAuditLog } from "./audit";
 
 export type ExamStatus = "DRAFT" | "PUBLISHED" | "CLOSED";
 
@@ -175,7 +176,7 @@ export async function createExam(
     );
   }
 
-  return db.orm.public.Exam.create({
+  const exam = await db.orm.public.Exam.create({
     schoolId: input.schoolId,
     sessionId: input.sessionId,
     termId: input.termId,
@@ -186,6 +187,26 @@ export async function createExam(
     status: input.status ?? "DRAFT",
     isActive: input.isActive ?? true,
   });
+
+  await writeAuditLog({
+    schoolId: input.schoolId,
+    userId,
+    action: "CREATE",
+    entity: "Exam",
+    entityId: exam.id,
+    newValue: {
+      sessionId: input.sessionId,
+      termId: input.termId,
+      classId: input.classId,
+      name,
+      startDate: input.startDate,
+      endDate: input.endDate,
+      status: input.status ?? "DRAFT",
+      isActive: input.isActive ?? true,
+    },
+  });
+
+  return exam;
 }
 
 export async function updateExam(
@@ -268,9 +289,27 @@ export async function updateExam(
 
   data.updatedAt = Temporal.Now.instant().toString();
 
-  return db.orm.public.Exam.where({ id: examId }).update(
-    data as never,
-  );
+  const updated = await db.orm.public.Exam.where({
+    id: examId,
+  }).update(data as never);
+
+  await writeAuditLog({
+    schoolId,
+    userId,
+    action: "UPDATE",
+    entity: "Exam",
+    entityId: examId,
+    oldValue: {
+      name: existing.name,
+      startDate: existing.startDate,
+      endDate: existing.endDate,
+      status: existing.status,
+      isActive: existing.isActive,
+    },
+    newValue: data,
+  });
+
+  return updated;
 }
 
 export async function publishExam(
@@ -294,10 +333,24 @@ export async function publishExam(
     throw new Error("Inactive exams cannot be published.");
   }
 
-  return db.orm.public.Exam.where({ id: examId }).update({
+  const updated = await db.orm.public.Exam.where({
+    id: examId,
+  }).update({
     status: "PUBLISHED",
     updatedAt: Temporal.Now.instant().toString(),
   });
+
+  await writeAuditLog({
+    schoolId,
+    userId,
+    action: "PUBLISH",
+    entity: "Exam",
+    entityId: examId,
+    oldValue: { status: existing.status },
+    newValue: { status: "PUBLISHED" },
+  });
+
+  return updated;
 }
 
 export async function closeExam(
@@ -317,10 +370,24 @@ export async function closeExam(
     throw new Error("Exam not found.");
   }
 
-  return db.orm.public.Exam.where({ id: examId }).update({
+  const updated = await db.orm.public.Exam.where({
+    id: examId,
+  }).update({
     status: "CLOSED",
     updatedAt: Temporal.Now.instant().toString(),
   });
+
+  await writeAuditLog({
+    schoolId,
+    userId,
+    action: "CLOSE",
+    entity: "Exam",
+    entityId: examId,
+    oldValue: { status: existing.status },
+    newValue: { status: "CLOSED" },
+  });
+
+  return updated;
 }
 
 export async function activateExam(
@@ -340,10 +407,24 @@ export async function activateExam(
     throw new Error("Exam not found.");
   }
 
-  return db.orm.public.Exam.where({ id: examId }).update({
+  const updated = await db.orm.public.Exam.where({
+    id: examId,
+  }).update({
     isActive: true,
     updatedAt: Temporal.Now.instant().toString(),
   });
+
+  await writeAuditLog({
+    schoolId,
+    userId,
+    action: "ACTIVATE",
+    entity: "Exam",
+    entityId: examId,
+    oldValue: { isActive: existing.isActive },
+    newValue: { isActive: true },
+  });
+
+  return updated;
 }
 
 export async function deactivateExam(
@@ -363,8 +444,22 @@ export async function deactivateExam(
     throw new Error("Exam not found.");
   }
 
-  return db.orm.public.Exam.where({ id: examId }).update({
+  const updated = await db.orm.public.Exam.where({
+    id: examId,
+  }).update({
     isActive: false,
     updatedAt: Temporal.Now.instant().toString(),
   });
+
+  await writeAuditLog({
+    schoolId,
+    userId,
+    action: "DEACTIVATE",
+    entity: "Exam",
+    entityId: examId,
+    oldValue: { isActive: existing.isActive },
+    newValue: { isActive: false },
+  });
+
+  return updated;
 }

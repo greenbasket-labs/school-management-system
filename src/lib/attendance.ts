@@ -1,6 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { db } from "../prisma/db";
 import { hasPermission } from "./permissions";
+import { writeAuditLog } from "./audit";
 
 export type AttendancePeriod =
   | "FIRST_PERIOD"
@@ -429,6 +430,22 @@ export async function saveClassAttendance(
       savedRecords.push(created);
     }
   }
+
+  await writeAuditLog({
+    schoolId: input.schoolId,
+    userId: input.markedByUserId,
+    action: alreadyTaken ? "UPDATE" : "CREATE",
+    entity: "Attendance",
+    entityId: `${input.classId}:${input.attendanceDate.toISOString()}:${input.period}`,
+    newValue: {
+      classId: input.classId,
+      attendanceDate: input.attendanceDate,
+      period: input.period,
+      totalStudents: classStudents.length,
+      present: presentIds.size,
+      absent: classStudents.length - presentIds.size,
+    },
+  });
 
   return {
     classId:

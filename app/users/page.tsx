@@ -12,7 +12,16 @@ export default async function UsersPage() {
   );
 
   const school = await getSchool();
-  const users = await db.orm.public.User.all();
+
+  if (!school) {
+    throw new Error("School not found");
+  }
+
+  const allUsers = await db.orm.public.User.all();
+
+  const users = allUsers.filter(
+    (item) => item.schoolId === school.id,
+  );
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -20,7 +29,7 @@ export default async function UsersPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-sm font-semibold text-blue-600">
-              {school?.name ?? "School Management System"}
+              {school.name}
             </p>
 
             <h1 className="mt-1 text-2xl font-bold text-slate-900">

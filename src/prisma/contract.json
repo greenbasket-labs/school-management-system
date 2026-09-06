@@ -52,6 +52,10 @@
       "model": "Parent",
       "namespace": "public"
     },
+    "passwordRecovery": {
+      "model": "PasswordRecovery",
+      "namespace": "public"
+    },
     "payment": {
       "model": "Payment",
       "namespace": "public"
@@ -122,6 +126,10 @@
     },
     "userRole": {
       "model": "UserRole",
+      "namespace": "public"
+    },
+    "userSession": {
+      "model": "UserSession",
       "namespace": "public"
     }
   },
@@ -257,6 +265,57 @@
               }
             ]
           },
+          "PasswordRecoveryMethod": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "EMAIL",
+                "value": "EMAIL"
+              },
+              {
+                "name": "PHONE",
+                "value": "PHONE"
+              }
+            ]
+          },
+          "PasswordRecoveryReason": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "PASSWORD_FORGOT",
+                "value": "PASSWORD_FORGOT"
+              },
+              {
+                "name": "NEW_DEVICE",
+                "value": "NEW_DEVICE"
+              },
+              {
+                "name": "SUSPICIOUS",
+                "value": "SUSPICIOUS"
+              }
+            ]
+          },
+          "PasswordRecoveryStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "PENDING",
+                "value": "PENDING"
+              },
+              {
+                "name": "ACTIVATED",
+                "value": "ACTIVATED"
+              },
+              {
+                "name": "EXPIRED",
+                "value": "EXPIRED"
+              },
+              {
+                "name": "CANCELLED",
+                "value": "CANCELLED"
+              }
+            ]
+          },
           "PaymentMethod": {
             "codecId": "pg/text@1",
             "members": [
@@ -355,6 +414,27 @@
               {
                 "name": "INACTIVE",
                 "value": "INACTIVE"
+              }
+            ]
+          },
+          "UserSessionStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "ACTIVE",
+                "value": "ACTIVE"
+              },
+              {
+                "name": "LOCKED",
+                "value": "LOCKED"
+              },
+              {
+                "name": "REVOKED",
+                "value": "REVOKED"
+              },
+              {
+                "name": "EXPIRED",
+                "value": "EXPIRED"
               }
             ]
           },
@@ -2255,6 +2335,281 @@
               "table": "parent"
             }
           },
+          "PasswordRecovery": {
+            "fields": {
+              "activateAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "deviceSessionId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiresAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "ipAddress": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "method": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PasswordRecoveryMethod",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "newDevice": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "newPasswordHash": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reason": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PasswordRecoveryReason",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "requestedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "roleRestrictedUntil": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "schoolId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PasswordRecoveryStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "tokenHash": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "usedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "userAgent": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "verifiedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "deviceSession": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "deviceSessionId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "UserSession",
+                  "namespace": "public"
+                }
+              },
+              "school": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "schoolId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "School",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "activateAt": {
+                  "column": "activateAt"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "deviceSessionId": {
+                  "column": "deviceSessionId"
+                },
+                "expiresAt": {
+                  "column": "expiresAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "ipAddress": {
+                  "column": "ipAddress"
+                },
+                "method": {
+                  "column": "method"
+                },
+                "newDevice": {
+                  "column": "newDevice"
+                },
+                "newPasswordHash": {
+                  "column": "newPasswordHash"
+                },
+                "reason": {
+                  "column": "reason"
+                },
+                "requestedAt": {
+                  "column": "requestedAt"
+                },
+                "roleRestrictedUntil": {
+                  "column": "roleRestrictedUntil"
+                },
+                "schoolId": {
+                  "column": "schoolId"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "tokenHash": {
+                  "column": "tokenHash"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "usedAt": {
+                  "column": "usedAt"
+                },
+                "userAgent": {
+                  "column": "userAgent"
+                },
+                "userId": {
+                  "column": "userId"
+                },
+                "verifiedAt": {
+                  "column": "verifiedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "passwordRecovery"
+            }
+          },
           "Payment": {
             "fields": {
               "amount": {
@@ -3390,6 +3745,21 @@
                   "namespace": "public"
                 }
               },
+              "passwordRecoveries": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "schoolId"
+                  ]
+                },
+                "to": {
+                  "model": "PasswordRecovery",
+                  "namespace": "public"
+                }
+              },
               "payments": {
                 "cardinality": "1:N",
                 "on": {
@@ -3477,6 +3847,21 @@
                 },
                 "to": {
                   "model": "Teacher",
+                  "namespace": "public"
+                }
+              },
+              "userSessions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "schoolId"
+                  ]
+                },
+                "to": {
+                  "model": "UserSession",
                   "namespace": "public"
                 }
               },
@@ -5007,6 +5392,13 @@
                   "kind": "scalar"
                 }
               },
+              "emailVerifiedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -5036,6 +5428,27 @@
                 }
               },
               "phone": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "phoneVerifiedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "roleRestrictedUntil": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "roleRestrictionReason": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
@@ -5136,6 +5549,21 @@
                   "namespace": "public"
                 }
               },
+              "passwordRecoveries": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "PasswordRecovery",
+                  "namespace": "public"
+                }
+              },
               "paymentsReceived": {
                 "cardinality": "1:N",
                 "on": {
@@ -5210,6 +5638,21 @@
                   "model": "School",
                   "namespace": "public"
                 }
+              },
+              "sessions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "UserSession",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -5219,6 +5662,9 @@
                 },
                 "email": {
                   "column": "email"
+                },
+                "emailVerifiedAt": {
+                  "column": "emailVerifiedAt"
                 },
                 "id": {
                   "column": "id"
@@ -5234,6 +5680,15 @@
                 },
                 "phone": {
                   "column": "phone"
+                },
+                "phoneVerifiedAt": {
+                  "column": "phoneVerifiedAt"
+                },
+                "roleRestrictedUntil": {
+                  "column": "roleRestrictedUntil"
+                },
+                "roleRestrictionReason": {
+                  "column": "roleRestrictionReason"
                 },
                 "schoolId": {
                   "column": "schoolId"
@@ -5325,6 +5780,219 @@
               },
               "namespaceId": "public",
               "table": "userRole"
+            }
+          },
+          "UserSession": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "deviceId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "deviceName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiresAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "ipAddress": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "lastActivityAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "lockedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "revokedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "schoolId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "sessionKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "UserSessionStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "userAgent": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "passwordRecoveries": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "deviceSessionId"
+                  ]
+                },
+                "to": {
+                  "model": "PasswordRecovery",
+                  "namespace": "public"
+                }
+              },
+              "school": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "schoolId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "School",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "deviceId": {
+                  "column": "deviceId"
+                },
+                "deviceName": {
+                  "column": "deviceName"
+                },
+                "expiresAt": {
+                  "column": "expiresAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "ipAddress": {
+                  "column": "ipAddress"
+                },
+                "lastActivityAt": {
+                  "column": "lastActivityAt"
+                },
+                "lockedAt": {
+                  "column": "lockedAt"
+                },
+                "revokedAt": {
+                  "column": "revokedAt"
+                },
+                "schoolId": {
+                  "column": "schoolId"
+                },
+                "sessionKey": {
+                  "column": "sessionKey"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "userAgent": {
+                  "column": "userAgent"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "userSession"
             }
           }
         }
@@ -7093,6 +7761,277 @@
                   ]
                 }
               ]
+            },
+            "passwordRecovery": {
+              "checks": [
+                {
+                  "expression": "\"method\" IN ('EMAIL', 'PHONE')",
+                  "name": "passwordRecovery_method_check_1e9d15ab",
+                  "prefix": "passwordRecovery_method_check"
+                },
+                {
+                  "expression": "\"reason\" IN ('PASSWORD_FORGOT', 'NEW_DEVICE', 'SUSPICIOUS')",
+                  "name": "passwordRecovery_reason_check_a7da5d81",
+                  "prefix": "passwordRecovery_reason_check"
+                },
+                {
+                  "expression": "\"status\" IN ('PENDING', 'ACTIVATED', 'EXPIRED', 'CANCELLED')",
+                  "name": "passwordRecovery_status_check_1d736426",
+                  "prefix": "passwordRecovery_status_check"
+                }
+              ],
+              "columns": {
+                "activateAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "deviceSessionId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "expiresAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "ipAddress": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "method": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PasswordRecoveryMethod",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "newDevice": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "newPasswordHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "reason": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "PASSWORD_FORGOT"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PasswordRecoveryReason",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "requestedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "roleRestrictedUntil": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "schoolId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "PENDING"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PasswordRecoveryStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "tokenHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "usedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "userAgent": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "verifiedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "passwordRecovery"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "schoolId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "passwordRecovery"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "school"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "deviceSessionId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "passwordRecovery"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "userSession"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "activateAt"
+                  ],
+                  "name": "passwordRecovery_activateAt_idx_02889bf8",
+                  "prefix": "passwordRecovery_activateAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "deviceSessionId"
+                  ],
+                  "name": "passwordRecovery_deviceSessionId_idx_4842b5f4",
+                  "prefix": "passwordRecovery_deviceSessionId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "schoolId"
+                  ],
+                  "name": "passwordRecovery_schoolId_idx_82b454d7",
+                  "prefix": "passwordRecovery_schoolId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "status"
+                  ],
+                  "name": "passwordRecovery_status_idx_e98638ab",
+                  "prefix": "passwordRecovery_status_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "tokenHash"
+                  ],
+                  "name": "passwordRecovery_tokenHash_idx_79b60c2b",
+                  "prefix": "passwordRecovery_tokenHash_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "passwordRecovery_userId_idx_a489d58a",
+                  "prefix": "passwordRecovery_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
             },
             "payment": {
               "checks": [
@@ -9213,6 +10152,11 @@
                   "nativeType": "text",
                   "nullable": true
                 },
+                "emailVerifiedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/int4@1",
                   "default": {
@@ -9238,6 +10182,21 @@
                   "nullable": false
                 },
                 "phone": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "phoneVerifiedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "roleRestrictedUntil": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "roleRestrictionReason": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
@@ -9446,6 +10405,197 @@
                   ]
                 }
               ]
+            },
+            "userSession": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('ACTIVE', 'LOCKED', 'REVOKED', 'EXPIRED')",
+                  "name": "userSession_status_check_97a4b3cb",
+                  "prefix": "userSession_status_check"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "deviceId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "deviceName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "expiresAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "ipAddress": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "lastActivityAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "lockedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "revokedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "schoolId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "sessionKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ACTIVE"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "UserSessionStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "userAgent": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "userSession"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "schoolId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "userSession"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "school"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "schoolId"
+                  ],
+                  "name": "userSession_schoolId_idx_82b454d7",
+                  "prefix": "userSession_schoolId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "status"
+                  ],
+                  "name": "userSession_status_idx_e98638ab",
+                  "prefix": "userSession_status_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "userSession_userId_idx_a489d58a",
+                  "prefix": "userSession_userId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId",
+                    "status"
+                  ],
+                  "name": "userSession_userId_status_idx_e4a128ba",
+                  "prefix": "userSession_userId_status_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "sessionKey"
+                  ]
+                }
+              ]
             }
           },
           "valueSet": {
@@ -9511,6 +10661,30 @@
                 "OTHER"
               ]
             },
+            "PasswordRecoveryMethod": {
+              "kind": "valueSet",
+              "values": [
+                "EMAIL",
+                "PHONE"
+              ]
+            },
+            "PasswordRecoveryReason": {
+              "kind": "valueSet",
+              "values": [
+                "PASSWORD_FORGOT",
+                "NEW_DEVICE",
+                "SUSPICIOUS"
+              ]
+            },
+            "PasswordRecoveryStatus": {
+              "kind": "valueSet",
+              "values": [
+                "PENDING",
+                "ACTIVATED",
+                "EXPIRED",
+                "CANCELLED"
+              ]
+            },
             "PaymentMethod": {
               "kind": "valueSet",
               "values": [
@@ -9555,6 +10729,15 @@
                 "INACTIVE"
               ]
             },
+            "UserSessionStatus": {
+              "kind": "valueSet",
+              "values": [
+                "ACTIVE",
+                "LOCKED",
+                "REVOKED",
+                "EXPIRED"
+              ]
+            },
             "UserStatus": {
               "kind": "valueSet",
               "values": [
@@ -9582,10 +10765,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a1cb2b80d40e8bac3699c87902c974027a23da188713ecf4a9f7d32ade5fc6ea"
+    "storageHash": "e9e746105569403b36f8f33b0692acc1727bb29b4d62391b8a9ba257c6c174e0"
   },
   "execution": {
-    "executionHash": "50464fa9b5ef6ce4cd2b969ab9b86cfbd4cedf3edd7484d7eaa32ddca75e94f9",
+    "executionHash": "3626e919c512635d781e665914c6fbb78c71e2f516ab18776b2ec4d8958ae0f6",
     "mutations": {
       "defaults": [
         {
@@ -9736,6 +10919,21 @@
             "column": "updatedAt",
             "namespace": "public",
             "table": "parent"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "passwordRecovery"
           }
         },
         {
@@ -9961,6 +11159,21 @@
             "column": "updatedAt",
             "namespace": "public",
             "table": "user"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "userSession"
           }
         }
       ]

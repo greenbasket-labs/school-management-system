@@ -2,6 +2,7 @@ import { Temporal } from "@js-temporal/polyfill";
 import { db } from "../prisma/db";
 import { getSchool } from "./school";
 import { hasPermission, requirePermission } from "./permissions";
+import { writeAuditLog } from "./audit";
 
 export type ResultStatus = "DRAFT" | "FINAL" | "PUBLISHED";
 
@@ -532,6 +533,26 @@ export async function saveStudentResult(
     }
   }
 
+  await writeAuditLog({
+    schoolId,
+    userId,
+    action: existingResult ? "UPDATE" : "CREATE",
+    entity: "Result",
+    entityId: result.id,
+    newValue: {
+      studentId: student.id,
+      examSubjectId: input.examSubjectId,
+      totalMark,
+      status: result.status,
+      marks: Array.from(cleanedMarks.entries()).map(
+        ([assessmentComponentId, mark]) => ({
+          assessmentComponentId,
+          mark,
+        }),
+      ),
+    },
+  });
+
   return {
     result,
     student,
@@ -840,6 +861,20 @@ export async function updateResultStatus(
       userId,
     );
   }
+
+  await writeAuditLog({
+    schoolId,
+    userId,
+    action: status === "FINAL" ? "FINALIZE" : "PUBLISH",
+    entity: "Result",
+    entityId: result.id,
+    oldValue: {
+      status: result.status,
+    },
+    newValue: {
+      status,
+    },
+  });
 
   return updated;
 }

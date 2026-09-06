@@ -1,6 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { db } from "../prisma/db";
 import { hasPermission } from "./permissions";
+import { writeAuditLog } from "./audit";
 
 export type CreatePaymentInput = {
   schoolId: number;
@@ -230,6 +231,22 @@ export async function createPayment(
       paymentId: payment.id,
       receiptNumber,
     });
+
+  await writeAuditLog({
+  schoolId: input.schoolId,
+  userId: input.cashierUserId,
+  action: "CREATE",
+  entity: "Payment",
+  entityId: payment.id,
+  newValue: {
+    studentId: input.studentId,
+    amount: input.amount,
+    method: input.method,
+    paymentDate: input.paymentDate,
+    reference: input.reference?.trim() || null,
+    receiptNumber,
+  },
+});
 
   const updatedBalance =
     await getStudentBalance(
