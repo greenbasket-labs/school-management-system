@@ -28,12 +28,14 @@ export async function assertRoleChangeAllowed(
     return true;
   }
 
-  if (Date.now() >= restrictedUntil) {
+  const now = Date.now();
+
+  if (now >= restrictedUntil) {
     return true;
   }
 
   const remainingMs =
-    restrictedUntil - Date.now();
+    restrictedUntil - now;
 
   const remainingDays = Math.ceil(
     remainingMs / (24 * 60 * 60 * 1000),
