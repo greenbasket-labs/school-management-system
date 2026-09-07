@@ -62,10 +62,18 @@ export default async function UserRolesPage({
     redirect("/users");
   }
 
+  const school = await getSchool();
+
+  if (!school) {
+    redirect("/users");
+  }
+
   const users = await db.orm.public.User.all();
 
   const user = users.find(
-    (item) => item.id === userId,
+    (item) =>
+      item.id === userId &&
+      item.schoolId === school.id,
   );
 
   if (!user) {
@@ -105,6 +113,36 @@ export default async function UserRolesPage({
       !Number.isInteger(roleId)
     ) {
       throw new Error("Invalid role assignment.");
+    }
+
+    const actorSchool = await getSchool();
+
+    if (!actorSchool) {
+      throw new Error("School not found.");
+    }
+
+    const allUsers = await db.orm.public.User.all();
+
+    const targetUser = allUsers.find(
+      (item) =>
+        item.id === targetUserId &&
+        item.schoolId === actorSchool.id,
+    );
+
+    if (!targetUser) {
+      throw new Error(
+        "User not found in your school.",
+      );
+    }
+
+    const roles = await getRoles();
+
+    const role = roles.find(
+      (item) => item.id === roleId,
+    );
+
+    if (!role) {
+      throw new Error("Role not found.");
     }
 
     await assignRoleToUser(
@@ -152,6 +190,26 @@ export default async function UserRolesPage({
       throw new Error("Invalid role removal.");
     }
 
+    const actorSchool = await getSchool();
+
+    if (!actorSchool) {
+      throw new Error("School not found.");
+    }
+
+    const allUsers = await db.orm.public.User.all();
+
+    const targetUser = allUsers.find(
+      (item) =>
+        item.id === targetUserId &&
+        item.schoolId === actorSchool.id,
+    );
+
+    if (!targetUser) {
+      throw new Error(
+        "User not found in your school.",
+      );
+    }
+
     const roles = await getRoles();
 
     const role = roles.find(
@@ -172,7 +230,6 @@ export default async function UserRolesPage({
     );
   }
 
-  const school = await getSchool();
   const roles = await getRoles();
   const userRoles = await getUserRolesById(userId);
 
@@ -186,7 +243,7 @@ export default async function UserRolesPage({
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-sm font-semibold text-blue-600">
-              {school?.name ?? "School Management System"}
+              {school.name}
             </p>
 
             <h1 className="mt-1 text-2xl font-bold text-slate-900">
