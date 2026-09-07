@@ -8,6 +8,24 @@ export async function getRoles() {
 }
 
 export async function getUserRoleIds(userId: number) {
+  const school = await getSchool();
+
+  if (!school) {
+    throw new Error("School not found.");
+  }
+
+  const users = await db.orm.public.User.all();
+
+  const user = users.find(
+    (item) =>
+      item.id === userId &&
+      item.schoolId === school.id,
+  );
+
+  if (!user) {
+    throw new Error("User not found.");
+  }
+
   const userRoles = await db.orm.public.UserRole.all();
 
   return userRoles
@@ -19,7 +37,9 @@ export async function getUserRolesById(userId: number) {
   const roleIds = await getUserRoleIds(userId);
   const roles = await getRoles();
 
-  return roles.filter((role) => roleIds.includes(role.id));
+  return roles.filter((role) =>
+    roleIds.includes(role.id),
+  );
 }
 
 export async function assignRoleToUser(
@@ -32,7 +52,10 @@ export async function assignRoleToUser(
     throw new Error("School not found.");
   }
 
-  await assertRoleChangeAllowed(userId, school.id);
+  await assertRoleChangeAllowed(
+    userId,
+    school.id,
+  );
 
   const users = await db.orm.public.User.all();
 
@@ -56,7 +79,8 @@ export async function assignRoleToUser(
     throw new Error("Role not found.");
   }
 
-  const existing = await db.orm.public.UserRole.all();
+  const existing =
+    await db.orm.public.UserRole.all();
 
   const alreadyAssigned = existing.some(
     (userRole) =>
@@ -99,7 +123,10 @@ export async function removeRoleFromUser(
     throw new Error("School not found.");
   }
 
-  await assertRoleChangeAllowed(userId, school.id);
+  await assertRoleChangeAllowed(
+    userId,
+    school.id,
+  );
 
   const users = await db.orm.public.User.all();
 
@@ -113,7 +140,18 @@ export async function removeRoleFromUser(
     throw new Error("User not found.");
   }
 
-  const userRoles = await db.orm.public.UserRole.all();
+  const roles = await getRoles();
+
+  const role = roles.find(
+    (item) => item.id === roleId,
+  );
+
+  if (!role) {
+    throw new Error("Role not found.");
+  }
+
+  const userRoles =
+    await db.orm.public.UserRole.all();
 
   const userRole = userRoles.find(
     (item) =>
@@ -139,6 +177,7 @@ export async function removeRoleFromUser(
     entityId: userRole.id,
     oldValue: {
       roleId,
+      roleName: role.name,
     },
   });
 
