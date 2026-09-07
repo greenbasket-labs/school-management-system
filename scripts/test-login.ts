@@ -2,12 +2,18 @@ import "dotenv/config";
 import { authenticateUser } from "../src/lib/login";
 
 async function main() {
-  const user = await authenticateUser("admin", "Admin@12345");
+  const result = await authenticateUser(
+    "admin",
+    "Admin@12345",
+  );
 
-  if (!user) {
+  if (!result.success) {
     console.log("LOGIN FAILED");
+    console.log("REASON:", result.reason);
     return;
   }
+
+  const user = result.user;
 
   console.log("LOGIN SUCCESS");
   console.log("USER ID:", user.id);

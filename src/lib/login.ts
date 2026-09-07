@@ -9,8 +9,8 @@ import {
 export type AuthenticationResult =
   | {
       success: true;
-      user: Awaited<
-        ReturnType<typeof findUserForLogin>
+      user: NonNullable<
+        Awaited<ReturnType<typeof findUserForLogin>>
       >;
     }
   | {
