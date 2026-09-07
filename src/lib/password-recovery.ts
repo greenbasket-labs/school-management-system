@@ -1,4 +1,4 @@
-import { randomBytes, createHash } from "crypto";
+import { randomBytes, randomInt, createHash } from "crypto";
 import { db } from "../prisma/db";
 import { hashPassword } from "./auth";
 import { writeAuditLog } from "./audit";
@@ -14,9 +14,7 @@ function hashToken(value: string) {
 }
 
 function generateVerificationCode() {
-  return String(
-    Math.floor(100000 + Math.random() * 900000),
-  );
+  return randomInt(100000, 1000000).toString();
 }
 
 function getActivationTime(input: {
@@ -48,8 +46,8 @@ function getRestrictionTime(newDevice: boolean) {
  * V1 does not yet connect to an external email/SMS provider.
  * The verification code is therefore returned only in development.
  *
- * Production delivery can later be connected here without
- * changing the recovery/security logic.
+ * Production delivery must be connected here before password
+ * recovery is enabled for a production deployment.
  */
 async function deliverVerificationCode(input: {
   method: "EMAIL" | "PHONE";
@@ -65,8 +63,8 @@ async function deliverVerificationCode(input: {
     return;
   }
 
-  console.log(
-    `[PASSWORD RECOVERY] Verification delivery required for ${input.method}.`,
+  throw new Error(
+    "Password recovery delivery is not configured for this deployment.",
   );
 }
 
