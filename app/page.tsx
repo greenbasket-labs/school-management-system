@@ -8,27 +8,33 @@ const stats = [
 const modules = [
   {
     title: "Students",
-    description: "Register students, manage profiles, IDs, classes and school history.",
+    description:
+      "Register students, manage profiles, IDs, classes and school history.",
   },
   {
     title: "Academics",
-    description: "Manage sessions, terms, classes, subjects, exams and results.",
+    description:
+      "Manage sessions, terms, classes, subjects, exams and results.",
   },
   {
     title: "Finance",
-    description: "Track fees, payments, balances, receipts and cashier activity.",
+    description:
+      "Track fees, payments, balances, receipts and cashier activity.",
   },
   {
     title: "Attendance",
-    description: "Record attendance and monitor student attendance performance.",
+    description:
+      "Record attendance and monitor student attendance performance.",
   },
   {
     title: "Reports",
-    description: "Access academic, financial, attendance and administrative reports.",
+    description:
+      "Access academic, financial, attendance and administrative reports.",
   },
   {
     title: "Communication",
-    description: "Manage announcements and school notifications.",
+    description:
+      "Manage announcements and school notifications.",
   },
 ];
 
@@ -41,18 +47,26 @@ export default function Home() {
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600">
               School Management System
             </p>
+
             <h1 className="mt-1 text-2xl font-bold tracking-tight">
               School Administration
             </h1>
           </div>
 
           <div className="hidden items-center gap-3 sm:flex">
-            <button className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
-              Settings
-            </button>
-            <button className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">
+            <a
+              href="/settings/devices"
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+            >
+              Devices
+            </a>
+
+            <a
+              href="/login"
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+            >
               Sign In
-            </button>
+            </a>
           </div>
         </div>
       </header>
@@ -63,9 +77,11 @@ export default function Home() {
             <p className="text-sm font-medium text-emerald-300">
               Welcome
             </p>
+
             <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
               Run your school from one place.
             </h2>
+
             <p className="mt-4 text-base leading-7 text-slate-300">
               Manage students, teachers, classes, fees, attendance, exams,
               results, reports and communication through one connected system.
@@ -79,11 +95,17 @@ export default function Home() {
               key={stat.label}
               className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
             >
-              <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+              <p className="text-sm font-medium text-slate-500">
+                {stat.label}
+              </p>
+
               <p className="mt-2 text-3xl font-bold tracking-tight">
                 {stat.value}
               </p>
-              <p className="mt-1 text-xs text-slate-400">{stat.detail}</p>
+
+              <p className="mt-1 text-xs text-slate-400">
+                {stat.detail}
+              </p>
             </div>
           ))}
         </section>
@@ -94,6 +116,7 @@ export default function Home() {
               <p className="text-sm font-semibold text-emerald-600">
                 Core modules
               </p>
+
               <h3 className="mt-1 text-2xl font-bold tracking-tight">
                 Everything your school needs
               </h3>
@@ -110,7 +133,9 @@ export default function Home() {
                   {module.title.charAt(0)}
                 </div>
 
-                <h4 className="mt-5 text-lg font-semibold">{module.title}</h4>
+                <h4 className="mt-5 text-lg font-semibold">
+                  {module.title}
+                </h4>
 
                 <p className="mt-2 text-sm leading-6 text-slate-500">
                   {module.description}

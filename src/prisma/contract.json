@@ -2488,6 +2488,13 @@
                   "kind": "scalar"
                 }
               },
+              "verificationCodeHash": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "verifiedAt": {
                 "nullable": true,
                 "type": {
@@ -2601,6 +2608,9 @@
                 },
                 "userId": {
                   "column": "userId"
+                },
+                "verificationCodeHash": {
+                  "column": "verificationCodeHash"
                 },
                 "verifiedAt": {
                   "column": "verifiedAt"
@@ -7918,6 +7928,11 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "verificationCodeHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "verifiedAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
@@ -10765,7 +10780,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "e9e746105569403b36f8f33b0692acc1727bb29b4d62391b8a9ba257c6c174e0"
+    "storageHash": "1b5b63c4102ada24d46ac1346c1196b9b79958739e1ef2e3d6383f7cd8249ac6"
   },
   "execution": {
     "executionHash": "3626e919c512635d781e665914c6fbb78c71e2f516ab18776b2ec4d8958ae0f6",

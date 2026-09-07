@@ -1,7 +1,10 @@
 import { randomUUID } from "crypto";
 import { db } from "../prisma/db";
 import { verifyPassword } from "./auth";
-import { getSession } from "./session";
+import {
+  getOrCreateDeviceId,
+  getSession,
+} from "./session";
 
 export async function authenticateUser(
   login: string,
@@ -35,34 +38,73 @@ export async function authenticateUser(
     return null;
   }
 
+  const deviceId = await getOrCreateDeviceId();
+
   const existingSessions =
     await db.orm.public.UserSession.all();
 
-  const activeSessions = existingSessions.filter(
+  const userSessions = existingSessions.filter(
     (item) =>
       item.userId === user.id &&
-      item.schoolId === user.schoolId &&
-      item.status === "ACTIVE",
+      item.schoolId === user.schoolId,
   );
 
-  // Maximum 2 active devices per user.
+  const activeSessions = userSessions.filter(
+    (item) => item.status === "ACTIVE",
+  );
+
+  /*
+   * Same browser/device:
+   * reuse the existing active session instead of
+   * counting another device.
+   */
+  const sameDeviceSession = activeSessions.find(
+    (item) => item.deviceId === deviceId,
+  );
+
+  if (sameDeviceSession) {
+    const now = new Date().toISOString();
+
+    await db.orm.public.UserSession
+      .where({ id: sameDeviceSession.id })
+      .update({
+        lastActivityAt: now,
+      });
+
+    const session = await getSession();
+
+    session.userId = user.id;
+    session.sessionKey =
+      sameDeviceSession.sessionKey;
+
+    await session.save();
+
+    return user;
+  }
+
+  /*
+   * Maximum 2 active devices.
+   */
   if (activeSessions.length >= 2) {
     return null;
   }
 
   const sessionKey = randomUUID();
-
   const now = new Date().toISOString();
 
   await db.orm.public.UserSession.create({
     userId: user.id,
     schoolId: user.schoolId,
+
     sessionKey,
-    deviceId: sessionKey,
+    deviceId,
     deviceName: null,
+
     ipAddress: null,
     userAgent: null,
+
     status: "ACTIVE",
+
     lastActivityAt: now,
     lockedAt: null,
     revokedAt: null,

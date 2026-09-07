@@ -276,8 +276,9 @@ model PasswordRecovery {
   status              PasswordRecoveryStatus     @default(PENDING)
   reason              PasswordRecoveryReason     @default(PASSWORD_FORGOT)
 
-  tokenHash           String
-  newPasswordHash     String
+  tokenHash             String
+  verificationCodeHash  String?
+  newPasswordHash       String
 
   requestedAt         TimestamptzString          @default(now())
   verifiedAt          TimestamptzString?
