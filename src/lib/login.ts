@@ -6,27 +6,49 @@ import {
   getSession,
 } from "./session";
 
-export async function authenticateUser(
-  login: string,
-  password: string,
-) {
+export type AuthenticationResult =
+  | {
+      success: true;
+      user: Awaited<
+        ReturnType<typeof findUserForLogin>
+      >;
+    }
+  | {
+      success: false;
+      reason: "INVALID_CREDENTIALS" | "DEVICE_LIMIT";
+    };
+
+async function findUserForLogin(login: string) {
   const users = await db.orm.public.User.all();
 
   const normalizedLogin = login.trim().toLowerCase();
 
-  const user = users.find(
+  return users.find(
     (item) =>
       item.username?.toLowerCase() === normalizedLogin ||
       item.email?.toLowerCase() === normalizedLogin ||
       item.phone === login.trim(),
   );
+}
+
+export async function authenticateUser(
+  login: string,
+  password: string,
+): Promise<AuthenticationResult> {
+  const user = await findUserForLogin(login);
 
   if (!user) {
-    return null;
+    return {
+      success: false,
+      reason: "INVALID_CREDENTIALS",
+    };
   }
 
   if (user.status !== "ACTIVE") {
-    return null;
+    return {
+      success: false,
+      reason: "INVALID_CREDENTIALS",
+    };
   }
 
   const validPassword = await verifyPassword(
@@ -35,7 +57,10 @@ export async function authenticateUser(
   );
 
   if (!validPassword) {
-    return null;
+    return {
+      success: false,
+      reason: "INVALID_CREDENTIALS",
+    };
   }
 
   const deviceId = await getOrCreateDeviceId();
@@ -55,8 +80,7 @@ export async function authenticateUser(
 
   /*
    * Same browser/device:
-   * reuse the existing active session instead of
-   * counting another device.
+   * reuse the existing active session.
    */
   const sameDeviceSession = activeSessions.find(
     (item) => item.deviceId === deviceId,
@@ -79,14 +103,20 @@ export async function authenticateUser(
 
     await session.save();
 
-    return user;
+    return {
+      success: true,
+      user,
+    };
   }
 
   /*
    * Maximum 2 active devices.
    */
   if (activeSessions.length >= 2) {
-    return null;
+    return {
+      success: false,
+      reason: "DEVICE_LIMIT",
+    };
   }
 
   const sessionKey = randomUUID();
@@ -118,5 +148,8 @@ export async function authenticateUser(
 
   await session.save();
 
-  return user;
+  return {
+    success: true,
+    user,
+  };
 }

@@ -2,6 +2,7 @@ import { db } from "../prisma/db";
 import { verifyPassword } from "./auth";
 import { getSession } from "./session";
 import { writeAuditLog } from "./audit";
+import { getSchool } from "./school";
 
 export async function unlockCurrentSession(password: string) {
   const session = await getSession();
@@ -10,8 +11,7 @@ export async function unlockCurrentSession(password: string) {
     return { success: false, reason: "NO_SESSION" };
   }
 
-  const schools = await db.orm.public.School.all();
-  const school = schools[0];
+  const school = await getSchool();
 
   if (!school) {
     return { success: false, reason: "NO_SCHOOL" };

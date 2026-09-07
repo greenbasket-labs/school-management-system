@@ -1,23 +1,11 @@
 import { redirect } from "next/navigation";
-import { getSession } from "../../../src/lib/session";
+import { getCurrentUser } from "../../../src/lib/current-user";
 import { hasPermission } from "../../../src/lib/permissions";
 import { getSchool } from "../../../src/lib/school";
-import { getSchoolFeatures, updateFeature } from "../../../src/lib/features";
-import { db } from "../../../src/prisma/db";
-
-async function getCurrentUser() {
-  const session = await getSession();
-
-  if (!session.userId) {
-    return null;
-  }
-
-  const users = await db.orm.public.User.all();
-
-  return (
-    users.find((user) => user.id === session.userId) ?? null
-  );
-}
+import {
+  getSchoolFeatures,
+  updateFeature,
+} from "../../../src/lib/features";
 
 async function toggleFeatureAction(formData: FormData) {
   "use server";
@@ -34,11 +22,21 @@ async function toggleFeatureAction(formData: FormData) {
   );
 
   if (!allowed) {
-    throw new Error("Permission denied");
+    throw new Error(
+      "Permission denied: school.edit",
+    );
   }
 
-  const featureId = Number(formData.get("featureId"));
-  const enabled = formData.get("enabled") === "true";
+  const featureId = Number(
+    formData.get("featureId"),
+  );
+
+  const enabled =
+    formData.get("enabled") === "true";
+
+  if (!Number.isInteger(featureId) || featureId <= 0) {
+    throw new Error("Invalid feature.");
+  }
 
   await updateFeature(featureId, enabled);
 
@@ -90,7 +88,11 @@ function FeatureCard({
             <input
               type="hidden"
               name="enabled"
-              value={feature.enabled ? "false" : "true"}
+              value={
+                feature.enabled
+                  ? "false"
+                  : "true"
+              }
             />
 
             <button
@@ -101,7 +103,9 @@ function FeatureCard({
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
-              {feature.enabled ? "Enabled" : "Enable"}
+              {feature.enabled
+                ? "Enabled"
+                : "Enable"}
             </button>
           </form>
         )}
@@ -125,26 +129,36 @@ export default async function FeaturesPage() {
 
   const allowed = await hasPermission(
     currentUser.id,
-    "school.edit",
+    "school.view",
   );
 
   if (!allowed) {
-    throw new Error("Permission denied");
+    throw new Error(
+      "Permission denied: school.view",
+    );
   }
+
+  const canEdit = await hasPermission(
+    currentUser.id,
+    "school.edit",
+  );
 
   const school = await getSchool();
   const features = await getSchoolFeatures();
 
   const core = features.filter(
-    (feature) => feature.category === "CORE",
+    (feature) =>
+      feature.category === "CORE",
   );
 
   const optional = features.filter(
-    (feature) => feature.category === "OPTIONAL",
+    (feature) =>
+      feature.category === "OPTIONAL",
   );
 
   const future = features.filter(
-    (feature) => feature.category === "FUTURE",
+    (feature) =>
+      feature.category === "FUTURE",
   );
 
   return (
@@ -153,7 +167,8 @@ export default async function FeaturesPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-sm font-semibold text-blue-600">
-              {school?.name ?? "School Management System"}
+              {school?.name ??
+                "School Management System"}
             </p>
 
             <h1 className="mt-1 text-2xl font-bold text-slate-900">
@@ -181,9 +196,10 @@ export default async function FeaturesPage() {
           </h2>
 
           <p className="mt-3 max-w-3xl text-slate-500">
-            Core modules are included automatically. Optional modules can be
-            enabled when your school needs them. Future modules are shown here
-            so you can see what is coming.
+            Core modules are included automatically.
+            Optional modules can be enabled when your
+            school needs them. Future modules are shown
+            here so you can see what is coming.
           </p>
         </div>
 
@@ -194,7 +210,8 @@ export default async function FeaturesPage() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Essential school management features included in every school.
+              Essential school management features
+              included in every school.
             </p>
           </div>
 
@@ -215,7 +232,8 @@ export default async function FeaturesPage() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Enable these modules when the school is ready to use them.
+              Enable these modules when the school
+              is ready to use them.
             </p>
           </div>
 
@@ -224,6 +242,7 @@ export default async function FeaturesPage() {
               <FeatureCard
                 key={feature.id}
                 feature={feature}
+                locked={!canEdit}
               />
             ))}
           </div>

@@ -2,17 +2,32 @@ import { redirect } from "next/navigation";
 import { authenticateUser } from "../../src/lib/login";
 import { getSchool } from "../../src/lib/school";
 
+type LoginPageProps = {
+  searchParams: Promise<{
+    error?: string;
+  }>;
+};
+
 async function loginAction(formData: FormData) {
   "use server";
 
   const login = String(formData.get("login") ?? "");
   const password = String(formData.get("password") ?? "");
 
-  const user = await authenticateUser(login, password);
+  const result = await authenticateUser(
+    login,
+    password,
+  );
 
-  if (!user) {
-    redirect("/login?error=invalid");
+  if (!result.success) {
+    redirect(
+      result.reason === "DEVICE_LIMIT"
+        ? "/login?error=device-limit"
+        : "/login?error=invalid",
+    );
   }
+
+  const user = result.user;
 
   if (
     user.userType === "STUDENT" ||
@@ -25,8 +40,13 @@ async function loginAction(formData: FormData) {
   redirect("/dashboard");
 }
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: LoginPageProps) {
   const school = await getSchool();
+  const params = await searchParams;
+
+  const error = params.error;
 
   return (
     <main className="min-h-screen bg-slate-50 flex items-center justify-center px-6">
@@ -34,7 +54,8 @@ export default async function LoginPage() {
         <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
           <div className="mb-8">
             <p className="text-sm font-semibold text-blue-600">
-              {school?.name ?? "School Management System"}
+              {school?.name ??
+                "School Management System"}
             </p>
 
             <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
@@ -46,6 +67,26 @@ export default async function LoginPage() {
                 "Sign in to access your school dashboard."}
             </p>
           </div>
+
+          {error === "device-limit" && (
+            <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <p className="font-semibold">
+                Maximum 2 active devices reached.
+              </p>
+
+              <p className="mt-1">
+                Revoke one existing device before
+                signing in on this device.
+              </p>
+            </div>
+          )}
+
+          {error === "invalid" && (
+            <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              Invalid email, username, phone or
+              password.
+            </div>
+          )}
 
           <form action={loginAction} className="space-y-5">
             <div>
