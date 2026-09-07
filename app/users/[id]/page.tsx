@@ -140,6 +140,11 @@ export default async function UserProfilePage({
     "users.edit",
   );
 
+  const canManageRoles = await hasPermission(
+    currentUser.id,
+    "users.manage_roles",
+  );
+
   const canManagePortal =
     canEdit &&
     (user.userType === "STUDENT" ||
@@ -375,6 +380,15 @@ export default async function UserProfilePage({
           )}
 
           <div className="mt-8 flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-6">
+            {canManageRoles && (
+              <a
+                href={`/users/${user.id}/roles`}
+                className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+              >
+                Manage Roles
+              </a>
+            )}
+
             {canManagePortal && (
               <a
                 href={`/users/${user.id}/portal-access`}

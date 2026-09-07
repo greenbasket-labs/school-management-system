@@ -113,6 +113,19 @@ async function updateUserAction(
     throw new Error("Invalid account status");
   }
 
+  // Changing a user's role/type requires the separate
+  // users.manage_roles permission.
+  if (userType !== user.userType) {
+    const canManageRoles = await hasPermission(
+      currentUser.id,
+      "users.manage_roles",
+    );
+
+    if (!canManageRoles) {
+      throw new Error("Permission denied: users.manage_roles");
+    }
+  }
+
   await db.orm.public.User
     .where({
       id: userId,
