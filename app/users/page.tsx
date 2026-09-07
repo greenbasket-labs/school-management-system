@@ -11,6 +11,11 @@ export default async function UsersPage() {
     "users.manage_roles",
   );
 
+  const canCreateUsers = await hasPermission(
+    user.id,
+    "users.create",
+  );
+
   const school = await getSchool();
 
   if (!school) {
@@ -60,12 +65,14 @@ export default async function UsersPage() {
               </p>
             </div>
 
-            <a
-              href="/users/new"
-              className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
-            >
-              Add User
-            </a>
+            {canCreateUsers && (
+              <a
+                href="/users/new"
+                className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+              >
+                Add User
+              </a>
+            )}
           </div>
 
           <div className="mt-8 overflow-x-auto rounded-xl border border-slate-200">
