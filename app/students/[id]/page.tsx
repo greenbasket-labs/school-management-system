@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requirePermission } from "../../../src/lib/authorization";
 import { getSchool } from "../../../src/lib/school";
@@ -483,15 +484,27 @@ export default async function StudentProfilePage({
           </div>
         </section>
 
+        {/* Parents / Guardians */}
         <section className="mt-6 rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-          <h2 className="text-xl font-bold text-slate-900">
-            Parents / Guardians
-          </h2>
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">
+                Parents / Guardians
+              </h2>
 
-          <p className="mt-2 text-sm text-slate-500">
-            Parents and guardians linked to this
-            student.
-          </p>
+              <p className="mt-2 text-sm text-slate-500">
+                Parents and guardians linked to this
+                student.
+              </p>
+            </div>
+
+            <Link
+              href={`/students/${student.id}/parents`}
+              className="inline-flex w-fit rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
+            >
+              Manage Parents
+            </Link>
+          </div>
 
           <div className="mt-6 space-y-4">
             {studentParents.map((link) => {
