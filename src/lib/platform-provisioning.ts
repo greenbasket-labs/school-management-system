@@ -1,4 +1,4 @@
-import { randomUUID, timingSafeEqual } from "crypto";
+import { timingSafeEqual } from "crypto";
 import { Temporal } from "@js-temporal/polyfill";
 import { db } from "../prisma/db";
 import { registerSchool } from "./register";
@@ -47,10 +47,9 @@ function requiredText(value: unknown, field: string) {
 }
 
 function optionalText(value: unknown) {
-  if (value === undefined || value === null) return undefined;
+  if (value === undefined || value === null) return "";
   if (typeof value !== "string") throw new Error("Invalid text value.");
-  const trimmed = value.trim();
-  return trimmed || undefined;
+  return value.trim();
 }
 
 function parseDate(value: string, field: string) {
@@ -97,7 +96,6 @@ export async function provisionFromPlatform(
   }
 
   const academic = input.academic;
-
   let sessionName: string | undefined;
   let startDate: Temporal.Instant | undefined;
   let endDate: Temporal.Instant | undefined;
@@ -115,12 +113,12 @@ export async function provisionFromPlatform(
 
     classes = (academic.classes ?? []).map((item, index) => ({
       name: requiredText(item?.name, `academic.classes[${index}].name`),
-      section: optionalText(item?.section) ?? null,
+      section: optionalText(item?.section) || null,
     }));
 
     subjects = (academic.subjects ?? []).map((item, index) => ({
       name: requiredText(item?.name, `academic.subjects[${index}].name`),
-      code: optionalText(item?.code) ?? null,
+      code: optionalText(item?.code) || null,
     }));
   }
 
@@ -130,25 +128,26 @@ export async function provisionFromPlatform(
     throw new Error("This database already has a school configured.");
   }
 
+  // Reuse the existing registration/business logic for school + owner creation.
   const result = await registerSchool({
     schoolName,
     ownerName,
     username,
-    email: optionalText(input.owner?.email),
-    phone: optionalText(input.owner?.phone),
+    email: optionalText(input.owner?.email) || undefined,
+    phone: optionalText(input.owner?.phone) || undefined,
     password,
   });
 
   const schoolId = result.school.id;
 
   await db.orm.public.School.where({ id: schoolId }).update({
-    motto: optionalText(input.school?.motto) ?? null,
-    address: optionalText(input.school?.address) ?? null,
-    phone: optionalText(input.school?.phone) ?? null,
-    email: optionalText(input.school?.email) ?? null,
-    website: optionalText(input.school?.website) ?? null,
-    principalName: optionalText(input.school?.principalName) ?? null,
-    registrationInfo: optionalText(input.school?.registrationInfo) ?? null,
+    motto: optionalText(input.school?.motto),
+    address: optionalText(input.school?.address),
+    phone: optionalText(input.school?.phone),
+    email: optionalText(input.school?.email),
+    website: optionalText(input.school?.website),
+    principalName: optionalText(input.school?.principalName),
+    registrationInfo: optionalText(input.school?.registrationInfo),
   });
 
   if (sessionName && startDate && endDate) {
@@ -187,6 +186,5 @@ export async function provisionFromPlatform(
     schoolId,
     ownerId: result.owner.id,
     permanentId: result.owner.permanentId,
-    provisioningId: randomUUID(),
   };
 }
