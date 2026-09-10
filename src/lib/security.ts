@@ -1,6 +1,6 @@
 import { db } from "../prisma/db";
 import { getCurrentUser } from "./current-user";
-import { hasPermission } from "./authorization";
+import { hasPermission } from "./permissions";
 import { writeAuditLog } from "./audit";
 
 export async function requireAuthenticatedUser() {
