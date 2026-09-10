@@ -143,6 +143,7 @@ model School {
 
   attendanceSetting  AttendanceSetting?
   attendanceRecords  AttendanceRecord[]
+  staffAttendanceRecords StaffAttendanceRecord[]
 
   exams              Exam[]
 
@@ -182,6 +183,7 @@ model User {
   paymentsReceived      Payment[]
 
   attendanceRecords     AttendanceRecord[]
+  staffAttendanceRecords StaffAttendanceRecord[]
 
   resultsEntered        Result[]                   @relation("ResultEnteredBy")
   resultsUpdated        Result[]                   @relation("ResultUpdatedBy")
@@ -867,7 +869,7 @@ model SchoolFeature {
   isCore      Boolean                    @default(false)
   sortOrder   Int                        @default(0)
   createdAt   TimestamptzString          @default(now())
-  updatedAt   TimestamptzString          @default(now())
+  updatedAt   temporal.updatedAtString()
 
   school      School                     @relation(fields:[schoolId], references:[id], onDelete: Cascade)
 
@@ -1004,7 +1006,7 @@ model Receipt {
   payment       Payment                    @relation(fields:[paymentId], references:[id])
 
   createdAt     TimestamptzString          @default(now())
-  updatedAt     TimestamptzString          @default(now())
+  updatedAt     temporal.updatedAtString()
 
   @@index([schoolId])
 }
