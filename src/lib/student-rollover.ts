@@ -1,4 +1,3 @@
-import { getActiveAcademicSession } from "./academic-sessions";
 import { db } from "../prisma/db";
 
 export type StudentRolloverDecision =
@@ -10,84 +9,69 @@ export type StudentRolloverDecision =
   | "PENDING";
 
 export type StudentRolloverCandidate = {
-  studentId: number;
-  permanentId: string;
-  studentName: string;
-  status: string;
-  currentClassId: number | null;
-  currentClassName: string | null;
-  currentSessionId: number | null;
-  decision: StudentRolloverDecision;
+  student: any;
+  currentClass: any | undefined;
+  currentHistory: any | undefined;
+  alreadyRolledOver: boolean;
 };
 
 export async function getStudentRolloverCandidates(
-  schoolId: number,
-  sourceSessionId?: number,
+  sourceSessionId: number,
+  targetSessionId: number,
 ) {
-  const activeSession = await getActiveAcademicSession(schoolId);
-  const sessionId = sourceSessionId ?? activeSession?.id;
-
-  if (!sessionId) {
-    throw new Error("No academic session is available for rollover.");
-  }
-
   const sessions = await db.orm.public.AcademicSession.all();
-  const sourceSession = sessions.find(
-    (session) =>
-      session.id === sessionId &&
-      session.schoolId === schoolId,
-  );
+  const sourceSession = sessions.find((item) => item.id === sourceSessionId);
+  const targetSession = sessions.find((item) => item.id === targetSessionId);
 
-  if (!sourceSession) {
-    throw new Error("Source academic session not found.");
+  if (!sourceSession || !targetSession || sourceSession.schoolId !== targetSession.schoolId) {
+    throw new Error("Academic session not found.");
+  }
+  if (sourceSession.status !== "COMPLETED") {
+    throw new Error("The source session must be completed.");
+  }
+  if (targetSession.status !== "DRAFT") {
+    throw new Error("The target session must be in DRAFT status.");
   }
 
-  const students = await db.orm.public.Student.all();
-  const classes = await db.orm.public.SchoolClass.all();
-  const histories = await db.orm.public.StudentClassHistory.all();
+  const [students, classes, histories] = await Promise.all([
+    db.orm.public.Student.all(),
+    db.orm.public.SchoolClass.all(),
+    db.orm.public.StudentClassHistory.all(),
+  ]);
 
   const candidates: StudentRolloverCandidate[] = [];
 
   for (const student of students) {
-    if (student.schoolId !== schoolId || student.status !== "ACTIVE") {
-      continue;
-    }
+    if (student.schoolId !== sourceSession.schoolId || student.status !== "ACTIVE") continue;
 
     const currentHistory = histories.find(
       (item) =>
         item.studentId === student.id &&
-        item.sessionId === sessionId &&
+        item.sessionId === sourceSessionId &&
         item.isCurrent === true,
     );
 
-    if (!currentHistory) {
-      continue;
-    }
+    if (!currentHistory) continue;
 
     const currentClass = classes.find(
-      (schoolClass) =>
-        schoolClass.id === currentHistory.classId &&
-        schoolClass.schoolId === schoolId,
+      (item) => item.id === currentHistory.classId && item.schoolId === sourceSession.schoolId,
+    );
+
+    const targetHistory = histories.find(
+      (item) => item.studentId === student.id && item.sessionId === targetSessionId,
     );
 
     candidates.push({
-      studentId: student.id,
-      permanentId: student.permanentId,
-      studentName: [student.firstName, student.middleName, student.lastName]
-        .filter(Boolean)
-        .join(" "),
-      status: student.status,
-      currentClassId: currentHistory.classId,
-      currentClassName: currentClass?.name ?? null,
-      currentSessionId: currentHistory.sessionId,
-      decision: "PENDING",
+      student,
+      currentClass,
+      currentHistory,
+      alreadyRolledOver: Boolean(targetHistory),
     });
   }
 
-  return {
-    sourceSession,
-    candidates: candidates.sort((a, b) =>
-      a.studentName.localeCompare(b.studentName),
-    ),
-  };
+  return candidates.sort((a, b) => {
+    const aName = `${a.student.firstName} ${a.student.lastName}`.toLowerCase();
+    const bName = `${b.student.firstName} ${b.student.lastName}`.toLowerCase();
+    return aName.localeCompare(bName);
+  });
 }
