@@ -1,5 +1,6 @@
 import { db } from "../prisma/db";
 import { writeAuditLog } from "./audit";
+import { getAcademicSessionReadiness } from "./academic-session-readiness";
 
 export type AcademicSessionLifecycleAction =
   | "ACTIVATE"
@@ -43,13 +44,27 @@ export async function applyAcademicSessionLifecycleAction(input: {
       );
     }
 
-    const terms = await db.orm.public.Term.all();
-    const sessionTerms = terms.filter(
-      (term) => term.sessionId === session.id,
-    );
+    const readiness = await getAcademicSessionReadiness(session.id);
 
-    if (sessionTerms.length === 0) {
-      throw new Error("An academic session must have at least one term before activation.");
+    if (!readiness.ready) {
+      const blockers: string[] = [];
+
+      if (!readiness.checks.hasTerms) blockers.push("at least one term");
+      if (!readiness.checks.hasClasses) blockers.push("at least one active class");
+      if (!readiness.checks.rolloverComplete) {
+        blockers.push(
+          `${readiness.counts.studentsPendingRollover} student rollover decision${
+            readiness.counts.studentsPendingRollover === 1 ? "" : "s"
+          }`,
+        );
+      }
+      if (!readiness.checks.noDuplicateTargetAssignments) {
+        blockers.push("duplicate student target-session assignments to be resolved");
+      }
+
+      throw new Error(
+        `This academic session is not ready for activation. Complete: ${blockers.join(", ")}.`,
+      );
     }
 
     await db.orm.public.AcademicSession.where({
