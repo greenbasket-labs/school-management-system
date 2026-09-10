@@ -56,6 +56,12 @@ export async function assignStudentToClass(
     throw new Error("Student not found.");
   }
 
+  if (student.status !== "ACTIVE") {
+    throw new Error(
+      "Only active students can be assigned to a class.",
+    );
+  }
+
   const classes =
     await db.orm.public.SchoolClass.all();
 
@@ -65,6 +71,12 @@ export async function assignStudentToClass(
 
   if (!schoolClass) {
     throw new Error("Class not found.");
+  }
+
+  if (schoolClass.status !== "ACTIVE") {
+    throw new Error(
+      "Only active classes can receive students.",
+    );
   }
 
   if (schoolClass.sessionId !== sessionId) {
@@ -90,6 +102,12 @@ export async function assignStudentToClass(
 
   if (!session) {
     throw new Error("Academic session not found.");
+  }
+
+  if (session.status !== "ACTIVE") {
+    throw new Error(
+      "Students can only be assigned within an active academic session.",
+    );
   }
 
   const history =
