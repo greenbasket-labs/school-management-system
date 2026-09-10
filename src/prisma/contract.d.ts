@@ -33,9 +33,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'1b5b63c4102ada24d46ac1346c1196b9b79958739e1ef2e3d6383f7cd8249ac6'>;
+  StorageHashBase<'2e8daaf8dc8d4365a2c6834e9813a31db9ea11dda3a9dec540986d77651d1b52'>;
 export type ExecutionHash =
-  ExecutionHashBase<'3626e919c512635d781e665914c6fbb78c71e2f516ab18776b2ec4d8958ae0f6'>;
+  ExecutionHashBase<'de906d074529fb1adf473b0ca8e9e2f9cf3d44a5f2be3b8c1a0777f8e4acf83e'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -499,6 +499,21 @@ export type FieldOutputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly StaffAttendanceRecord: {
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly schoolId: CodecTypes['pg/int4@1']['output'];
+      readonly userId: CodecTypes['pg/int4@1']['output'];
+      readonly attendanceDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly checkInAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly checkOutAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly lateMinutes: CodecTypes['pg/int4@1']['output'];
+      readonly missedCheckout: CodecTypes['pg/bool@1']['output'];
+      readonly correctionReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly correctedByUserId: CodecTypes['pg/int4@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly Student: {
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly schoolId: CodecTypes['pg/int4@1']['output'];
@@ -871,6 +886,21 @@ export type FieldInputTypes = {
       readonly enabled: CodecTypes['pg/bool@1']['input'];
       readonly isCore: CodecTypes['pg/bool@1']['input'];
       readonly sortOrder: CodecTypes['pg/int4@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly StaffAttendanceRecord: {
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly schoolId: CodecTypes['pg/int4@1']['input'];
+      readonly userId: CodecTypes['pg/int4@1']['input'];
+      readonly attendanceDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly checkInAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly checkOutAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly lateMinutes: CodecTypes['pg/int4@1']['input'];
+      readonly missedCheckout: CodecTypes['pg/bool@1']['input'];
+      readonly correctionReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly correctedByUserId: CodecTypes['pg/int4@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
@@ -1249,6 +1279,21 @@ export type StorageColumnTypes = {
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly staffAttendanceRecord: {
+      readonly attendanceDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly checkInAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly checkOutAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly correctedByUserId: CodecTypes['pg/int4@1']['output'] | null;
+      readonly correctionReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly lateMinutes: CodecTypes['pg/int4@1']['output'];
+      readonly missedCheckout: CodecTypes['pg/bool@1']['output'];
+      readonly schoolId: CodecTypes['pg/int4@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly userId: CodecTypes['pg/int4@1']['output'];
+    };
     readonly student: {
       readonly address: CodecTypes['pg/text@1']['output'] | null;
       readonly admissionDate: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -1623,6 +1668,21 @@ export type StorageColumnInputTypes = {
       readonly sortOrder: CodecTypes['pg/int4@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly staffAttendanceRecord: {
+      readonly attendanceDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly checkInAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly checkOutAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly correctedByUserId: CodecTypes['pg/int4@1']['input'] | null;
+      readonly correctionReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly lateMinutes: CodecTypes['pg/int4@1']['input'];
+      readonly missedCheckout: CodecTypes['pg/bool@1']['input'];
+      readonly schoolId: CodecTypes['pg/int4@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly userId: CodecTypes['pg/int4@1']['input'];
     };
     readonly student: {
       readonly address: CodecTypes['pg/text@1']['input'] | null;
@@ -2092,6 +2152,7 @@ type ContractBase = Omit<
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
                   readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
@@ -3366,6 +3427,7 @@ type ContractBase = Omit<
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
                   readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
@@ -4241,6 +4303,153 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'school';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly staffAttendanceRecord: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                };
+                readonly schoolId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly userId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly attendanceDate: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly checkInAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly checkOutAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'PRESENT'>;
+                  };
+                };
+                readonly lateMinutes: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+                readonly missedCheckout: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                };
+                readonly correctionReason: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly correctedByUserId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['userId', 'attendanceDate'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'staffAttendanceRecord_schoolId_attendanceDate_idx_bbb9c33c';
+                  readonly prefix: 'staffAttendanceRecord_schoolId_attendanceDate_idx';
+                  readonly columns: readonly ['schoolId', 'attendanceDate'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'staffAttendanceRecord_userId_attendanceDate_idx_9feb4109';
+                  readonly prefix: 'staffAttendanceRecord_userId_attendanceDate_idx';
+                  readonly columns: readonly ['userId', 'attendanceDate'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'staffAttendanceRecord_status_idx_e98638ab';
+                  readonly prefix: 'staffAttendanceRecord_status_idx';
+                  readonly columns: readonly ['status'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'staffAttendanceRecord_schoolId_idx_82b454d7';
+                  readonly prefix: 'staffAttendanceRecord_schoolId_idx';
+                  readonly columns: readonly ['schoolId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'staffAttendanceRecord_userId_idx_a489d58a';
+                  readonly prefix: 'staffAttendanceRecord_userId_idx';
+                  readonly columns: readonly ['userId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'staffAttendanceRecord';
+                    readonly columns: readonly ['schoolId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'school';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'staffAttendanceRecord';
+                    readonly columns: readonly ['userId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'user';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -5399,6 +5608,10 @@ type ContractBase = Omit<
     readonly attendanceRecord: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'AttendanceRecord';
+    };
+    readonly staffAttendanceRecord: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'StaffAttendanceRecord';
     };
     readonly announcement: {
       readonly namespace: 'public' & NamespaceId;
@@ -7541,6 +7754,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['schoolId'];
                 };
               };
+              readonly staffAttendanceRecords: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'StaffAttendanceRecord';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['schoolId'];
+                };
+              };
               readonly students: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -7856,6 +8080,117 @@ type ContractBase = Omit<
                 readonly enabled: { readonly column: 'enabled' };
                 readonly isCore: { readonly column: 'isCore' };
                 readonly sortOrder: { readonly column: 'sortOrder' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly StaffAttendanceRecord: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly schoolId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly userId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly attendanceDate: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly checkInAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly checkOutAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly lateMinutes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly missedCheckout: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly correctionReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly correctedByUserId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly school: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'School';
+                };
+                readonly cardinality: 'N:1';
+                readonly on: {
+                  readonly localFields: readonly ['schoolId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly user: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly on: {
+                  readonly localFields: readonly ['userId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'staffAttendanceRecord';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly schoolId: { readonly column: 'schoolId' };
+                readonly userId: { readonly column: 'userId' };
+                readonly attendanceDate: { readonly column: 'attendanceDate' };
+                readonly checkInAt: { readonly column: 'checkInAt' };
+                readonly checkOutAt: { readonly column: 'checkOutAt' };
+                readonly status: { readonly column: 'status' };
+                readonly lateMinutes: { readonly column: 'lateMinutes' };
+                readonly missedCheckout: { readonly column: 'missedCheckout' };
+                readonly correctionReason: { readonly column: 'correctionReason' };
+                readonly correctedByUserId: { readonly column: 'correctedByUserId' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };
@@ -8729,6 +9064,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['userId'];
                 };
               };
+              readonly staffAttendanceRecords: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'StaffAttendanceRecord';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['userId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'user';
@@ -9150,15 +9496,6 @@ type ContractBase = Omit<
         {
           readonly ref: {
             readonly namespace: 'public';
-            readonly table: 'attendanceRecord';
-            readonly column: 'updatedAt';
-          };
-          readonly onCreate: { readonly kind: 'generator'; readonly id: 'timestampNow' };
-          readonly onUpdate: { readonly kind: 'generator'; readonly id: 'timestampNow' };
-        },
-        {
-          readonly ref: {
-            readonly namespace: 'public';
             readonly table: 'attendanceSetting';
             readonly column: 'updatedAt';
           };
@@ -9214,15 +9551,6 @@ type ContractBase = Omit<
           readonly ref: {
             readonly namespace: 'public';
             readonly table: 'passwordRecovery';
-            readonly column: 'updatedAt';
-          };
-          readonly onCreate: { readonly kind: 'generator'; readonly id: 'timestampNow' };
-          readonly onUpdate: { readonly kind: 'generator'; readonly id: 'timestampNow' };
-        },
-        {
-          readonly ref: {
-            readonly namespace: 'public';
-            readonly table: 'payment';
             readonly column: 'updatedAt';
           };
           readonly onCreate: { readonly kind: 'generator'; readonly id: 'timestampNow' };

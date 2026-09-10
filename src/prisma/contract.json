@@ -96,6 +96,10 @@
       "model": "SchoolFeature",
       "namespace": "public"
     },
+    "staffAttendanceRecord": {
+      "model": "StaffAttendanceRecord",
+      "namespace": "public"
+    },
     "student": {
       "model": "Student",
       "namespace": "public"
@@ -3815,6 +3819,21 @@
                   "namespace": "public"
                 }
               },
+              "staffAttendanceRecords": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "schoolId"
+                  ]
+                },
+                "to": {
+                  "model": "StaffAttendanceRecord",
+                  "namespace": "public"
+                }
+              },
               "students": {
                 "cardinality": "1:N",
                 "on": {
@@ -4322,6 +4341,178 @@
               },
               "namespaceId": "public",
               "table": "schoolFeature"
+            }
+          },
+          "StaffAttendanceRecord": {
+            "fields": {
+              "attendanceDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "checkInAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "checkOutAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "correctedByUserId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "correctionReason": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "lateMinutes": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "missedCheckout": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "schoolId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "school": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "schoolId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "School",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "attendanceDate": {
+                  "column": "attendanceDate"
+                },
+                "checkInAt": {
+                  "column": "checkInAt"
+                },
+                "checkOutAt": {
+                  "column": "checkOutAt"
+                },
+                "correctedByUserId": {
+                  "column": "correctedByUserId"
+                },
+                "correctionReason": {
+                  "column": "correctionReason"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "lateMinutes": {
+                  "column": "lateMinutes"
+                },
+                "missedCheckout": {
+                  "column": "missedCheckout"
+                },
+                "schoolId": {
+                  "column": "schoolId"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "staffAttendanceRecord"
             }
           },
           "Student": {
@@ -5663,6 +5854,21 @@
                   "model": "UserSession",
                   "namespace": "public"
                 }
+              },
+              "staffAttendanceRecords": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "StaffAttendanceRecord",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -6451,6 +6657,10 @@
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
                   "nativeType": "timestamptz",
                   "nullable": false
                 }
@@ -8143,6 +8353,10 @@
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
                   "nativeType": "timestamptz",
                   "nullable": false
                 }
@@ -9281,6 +9495,192 @@
                   "columns": [
                     "schoolId",
                     "featureCode"
+                  ]
+                }
+              ]
+            },
+            "staffAttendanceRecord": {
+              "columns": {
+                "attendanceDate": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "checkInAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "checkOutAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "correctedByUserId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "correctionReason": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "lateMinutes": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "missedCheckout": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "schoolId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "PRESENT"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "schoolId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "staffAttendanceRecord"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "school"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "staffAttendanceRecord"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "schoolId",
+                    "attendanceDate"
+                  ],
+                  "name": "staffAttendanceRecord_schoolId_attendanceDate_idx_bbb9c33c",
+                  "prefix": "staffAttendanceRecord_schoolId_attendanceDate_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "schoolId"
+                  ],
+                  "name": "staffAttendanceRecord_schoolId_idx_82b454d7",
+                  "prefix": "staffAttendanceRecord_schoolId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "status"
+                  ],
+                  "name": "staffAttendanceRecord_status_idx_e98638ab",
+                  "prefix": "staffAttendanceRecord_status_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId",
+                    "attendanceDate"
+                  ],
+                  "name": "staffAttendanceRecord_userId_attendanceDate_idx_9feb4109",
+                  "prefix": "staffAttendanceRecord_userId_attendanceDate_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "staffAttendanceRecord_userId_idx_a489d58a",
+                  "prefix": "staffAttendanceRecord_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "userId",
+                    "attendanceDate"
                   ]
                 }
               ]
@@ -10780,10 +11180,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "1b5b63c4102ada24d46ac1346c1196b9b79958739e1ef2e3d6383f7cd8249ac6"
+    "storageHash": "2e8daaf8dc8d4365a2c6834e9813a31db9ea11dda3a9dec540986d77651d1b52"
   },
   "execution": {
-    "executionHash": "3626e919c512635d781e665914c6fbb78c71e2f516ab18776b2ec4d8958ae0f6",
+    "executionHash": "de906d074529fb1adf473b0ca8e9e2f9cf3d44a5f2be3b8c1a0777f8e4acf83e",
     "mutations": {
       "defaults": [
         {
@@ -10829,21 +11229,6 @@
             "column": "updatedAt",
             "namespace": "public",
             "table": "assessmentComponent"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "timestampNow",
-            "kind": "generator"
-          },
-          "onUpdate": {
-            "id": "timestampNow",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "updatedAt",
-            "namespace": "public",
-            "table": "attendanceRecord"
           }
         },
         {
@@ -10949,21 +11334,6 @@
             "column": "updatedAt",
             "namespace": "public",
             "table": "passwordRecovery"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "timestampNow",
-            "kind": "generator"
-          },
-          "onUpdate": {
-            "id": "timestampNow",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "updatedAt",
-            "namespace": "public",
-            "table": "payment"
           }
         },
         {
