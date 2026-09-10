@@ -111,12 +111,15 @@ export default async function AcademicSessionDetailPage({
   );
 
   let canCreateTerm = false;
+  let canCreateNextSession = false;
 
   try {
     await requirePermission("academics.create");
     canCreateTerm = true;
+    canCreateNextSession = session.status === "COMPLETED";
   } catch {
     canCreateTerm = false;
+    canCreateNextSession = false;
   }
 
   const activeTerm = terms.find(
@@ -155,14 +158,25 @@ export default async function AcademicSessionDetailPage({
               </p>
             </div>
 
-            {canCreateTerm && (
-              <Link
-                href={`/academic-sessions/${sessionId}/terms/new`}
-                className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
-              >
-                + Add Term
-              </Link>
-            )}
+            <div className="flex flex-wrap gap-3">
+              {canCreateNextSession && (
+                <Link
+                  href={`/academic-sessions/${sessionId}/rollover`}
+                  className="inline-flex items-center justify-center rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+                >
+                  Start Rollover
+                </Link>
+              )}
+
+              {canCreateTerm && (
+                <Link
+                  href={`/academic-sessions/${sessionId}/terms/new`}
+                  className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
+                >
+                  + Add Term
+                </Link>
+              )}
+            </div>
           </div>
         </div>
 
@@ -197,6 +211,24 @@ export default async function AcademicSessionDetailPage({
             </p>
           </div>
         </section>
+
+        {canCreateNextSession && (
+          <section className="mb-8 rounded-2xl border border-blue-200 bg-blue-50 p-6">
+            <h2 className="text-lg font-bold text-blue-950">
+              Ready for the next academic session?
+            </h2>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-blue-900">
+              Start the rollover by creating the next session as DRAFT. The
+              completed session and its historical records stay unchanged.
+            </p>
+            <Link
+              href={`/academic-sessions/${sessionId}/rollover`}
+              className="mt-4 inline-flex rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
+            >
+              Create Next Session
+            </Link>
+          </section>
+        )}
 
         <section className="mb-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -250,25 +282,11 @@ export default async function AcademicSessionDetailPage({
               <table className="w-full min-w-[700px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-                    <th className="px-4 py-3 font-semibold">
-                      Term
-                    </th>
-
-                    <th className="px-4 py-3 font-semibold">
-                      Name
-                    </th>
-
-                    <th className="px-4 py-3 font-semibold">
-                      Start
-                    </th>
-
-                    <th className="px-4 py-3 font-semibold">
-                      End
-                    </th>
-
-                    <th className="px-4 py-3 font-semibold">
-                      Status
-                    </th>
+                    <th className="px-4 py-3 font-semibold">Term</th>
+                    <th className="px-4 py-3 font-semibold">Name</th>
+                    <th className="px-4 py-3 font-semibold">Start</th>
+                    <th className="px-4 py-3 font-semibold">End</th>
+                    <th className="px-4 py-3 font-semibold">Status</th>
                   </tr>
                 </thead>
 
@@ -281,28 +299,22 @@ export default async function AcademicSessionDetailPage({
                       <td className="px-4 py-4 font-semibold text-slate-900">
                         {termLabel(term.term)}
                       </td>
-
                       <td className="px-4 py-4 text-slate-700">
                         {term.name}
                       </td>
-
                       <td className="px-4 py-4 text-slate-700">
                         {formatDate(term.startDate)}
                       </td>
-
                       <td className="px-4 py-4 text-slate-700">
                         {formatDate(term.endDate)}
                       </td>
-
                       <td className="px-4 py-4">
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-semibold ${termStatusClasses(
                             term.isActive,
                           )}`}
                         >
-                          {term.isActive
-                            ? "ACTIVE"
-                            : "INACTIVE"}
+                          {term.isActive ? "ACTIVE" : "INACTIVE"}
                         </span>
                       </td>
                     </tr>
@@ -318,14 +330,11 @@ export default async function AcademicSessionDetailPage({
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Classes
             </p>
-
             <h3 className="mt-2 font-semibold text-slate-900">
               Classes connected later
             </h3>
-
             <p className="mt-2 text-sm text-slate-600">
-              Classes will be created and connected to this academic
-              session.
+              Classes will be created and connected to this academic session.
             </p>
           </div>
 
@@ -333,14 +342,12 @@ export default async function AcademicSessionDetailPage({
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Students
             </p>
-
             <h3 className="mt-2 font-semibold text-slate-900">
               Class history
             </h3>
-
             <p className="mt-2 text-sm text-slate-600">
-              Student class history will use this session for
-              promotion and historical records.
+              Student class history will use this session for promotion and
+              historical records.
             </p>
           </div>
 
@@ -348,11 +355,9 @@ export default async function AcademicSessionDetailPage({
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               School
             </p>
-
             <h3 className="mt-2 font-semibold text-slate-900">
               {school?.name ?? "School"}
             </h3>
-
             <p className="mt-2 text-sm text-slate-600">
               This academic session belongs to the current school.
             </p>
