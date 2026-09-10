@@ -18,15 +18,10 @@ export default async function AcademicSessionLifecyclePage({
   const { id } = await params;
   const sessionId = Number(id);
 
-  if (!Number.isInteger(sessionId) || sessionId <= 0) {
-    redirect("/academic-sessions");
-  }
+  if (!Number.isInteger(sessionId) || sessionId <= 0) redirect("/academic-sessions");
 
   const session = await getAcademicSessionById(sessionId, actor.schoolId);
-
-  if (!session) {
-    redirect("/academic-sessions");
-  }
+  if (!session) redirect("/academic-sessions");
 
   async function runLifecycle(formData: FormData) {
     "use server";
@@ -36,13 +31,14 @@ export default async function AcademicSessionLifecyclePage({
     if (!reason) throw new Error("A reason is required.");
 
     const user = await requirePermission("academics.edit");
+    const input = { sessionId, actorUserId: user.id, reason };
 
     if (action === "ACTIVATE") {
-      await activateAcademicSession(sessionId, user.id, reason);
+      await activateAcademicSession(input);
     } else if (action === "COMPLETE") {
-      await completeAcademicSession(sessionId, user.id, reason);
+      await completeAcademicSession(input);
     } else if (action === "ARCHIVE") {
-      await archiveAcademicSession(sessionId, user.id, reason);
+      await archiveAcademicSession(input);
     } else {
       throw new Error("Invalid lifecycle action.");
     }
@@ -71,10 +67,7 @@ export default async function AcademicSessionLifecyclePage({
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-10">
       <div className="mx-auto max-w-2xl">
-        <Link
-          href={`/academic-sessions/${sessionId}`}
-          className="text-sm font-medium text-slate-600 hover:text-slate-900"
-        >
+        <Link href={`/academic-sessions/${sessionId}`} className="text-sm font-medium text-slate-600 hover:text-slate-900">
           ← Back to Academic Session
         </Link>
 
@@ -82,13 +75,9 @@ export default async function AcademicSessionLifecyclePage({
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-emerald-700">Academic Session</p>
-              <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
-                {session.name}
-              </h1>
+              <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">{session.name}</h1>
             </div>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
-              {session.status}
-            </span>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">{session.status}</span>
           </div>
 
           <div className="mt-8 rounded-xl border border-amber-200 bg-amber-50 p-5">
@@ -101,7 +90,6 @@ export default async function AcademicSessionLifecyclePage({
           {action ? (
             <form action={runLifecycle} className="mt-7 space-y-5">
               <input type="hidden" name="action" value={action} />
-
               <label className="block">
                 <span className="text-sm font-semibold text-slate-700">Reason *</span>
                 <textarea
@@ -112,20 +100,9 @@ export default async function AcademicSessionLifecyclePage({
                   className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
                 />
               </label>
-
               <div className="flex justify-end gap-3">
-                <Link
-                  href={`/academic-sessions/${sessionId}`}
-                  className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-                >
-                  Cancel
-                </Link>
-                <button
-                  type="submit"
-                  className="rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
-                >
-                  {actionLabel}
-                </button>
+                <Link href={`/academic-sessions/${sessionId}`} className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100">Cancel</Link>
+                <button type="submit" className="rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">{actionLabel}</button>
               </div>
             </form>
           ) : (
