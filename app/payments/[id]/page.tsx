@@ -54,6 +54,7 @@ export default async function PaymentDetailsPage({ params }: { params: Promise<{
   const cashier = users.find((item) => item.id === payment.cashierUserId && item.schoolId === school.id);
   const receipt = receipts.find((item) => item.paymentId === payment.id && item.schoolId === school.id);
   const paymentAllocations = allocations.filter((item) => item.paymentId === payment.id && item.schoolId === school.id);
+  const isCompleted = payment.status === "COMPLETED";
   const completedPaymentIds = new Set(
     payments
       .filter((item) => item.schoolId === school.id && item.studentId === payment.studentId && item.status === "COMPLETED")
@@ -71,8 +72,9 @@ export default async function PaymentDetailsPage({ params }: { params: Promise<{
   const totalDue = studentAssignments.reduce((sum, item) => sum + Number(item.amount), 0);
   const totalAllocated = studentAssignments.reduce((sum, item) => sum + Math.min(Number(item.amount), studentAllocationTotals.get(item.id) ?? 0), 0);
   const balance = Math.max(0, totalDue - totalAllocated);
-  const paymentAllocated = paymentAllocations.reduce((sum, item) => sum + Number(item.amount), 0);
-  const unallocated = Math.max(0, Number(payment.amount) - paymentAllocated);
+  const recordedAllocation = paymentAllocations.reduce((sum, item) => sum + Number(item.amount), 0);
+  const paymentAllocated = isCompleted ? recordedAllocation : 0;
+  const unallocated = isCompleted ? Math.max(0, Number(payment.amount) - recordedAllocation) : 0;
   const canCorrect = payment.status === "COMPLETED" && (user.userType === "OWNER" || user.userType === "ADMIN");
 
   function feeName(feeAssignmentId: number) {
@@ -107,7 +109,7 @@ export default async function PaymentDetailsPage({ params }: { params: Promise<{
         <div className="mt-6 grid gap-4 sm:grid-cols-4">
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Payment</div><div className="mt-2 text-2xl font-bold text-slate-900">{formatMoney(payment.amount)}</div></div>
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Allocated</div><div className="mt-2 text-2xl font-bold text-slate-900">{formatMoney(paymentAllocated)}</div></div>
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Unallocated</div><div className="mt-2 text-2xl font-bold text-slate-900">{formatMoney(unallocated)}</div></div>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Unallocated</div><div className="mt-2 text-2xl font-bold text-slate-900">{isCompleted ? formatMoney(unallocated) : "—"}</div></div>
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Balance After</div><div className="mt-2 text-2xl font-bold text-slate-900">{formatMoney(balance)}</div></div>
         </div>
 
@@ -126,7 +128,7 @@ export default async function PaymentDetailsPage({ params }: { params: Promise<{
 
           <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="font-semibold text-slate-900">What This Payment Covered</h2>
-            <p className="mt-1 text-sm text-slate-500">Recorded allocations for this payment.</p>
+            <p className="mt-1 text-sm text-slate-500">Recorded allocations are retained for history. Only completed payments affect the current financial position.</p>
 
             {paymentAllocations.length === 0 ? (
               <div className="mt-6 rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500">No fee allocation was recorded for this payment.</div>
@@ -146,8 +148,11 @@ export default async function PaymentDetailsPage({ params }: { params: Promise<{
 
             <div className="mt-4 border-t border-slate-200 pt-4">
               <div className="flex justify-between text-sm"><span className="text-slate-500">Payment</span><span className="font-semibold">{formatMoney(payment.amount)}</span></div>
-              <div className="mt-2 flex justify-between text-sm"><span className="text-slate-500">Allocated</span><span className="font-semibold">{formatMoney(paymentAllocated)}</span></div>
-              <div className="mt-2 flex justify-between text-sm"><span className="text-slate-500">Unallocated credit</span><span className="font-semibold">{formatMoney(unallocated)}</span></div>
+              <div className="mt-2 flex justify-between text-sm"><span className="text-slate-500">Financial allocation</span><span className="font-semibold">{formatMoney(paymentAllocated)}</span></div>
+              <div className="mt-2 flex justify-between text-sm"><span className="text-slate-500">Unallocated credit</span><span className="font-semibold">{isCompleted ? formatMoney(unallocated) : "Not active"}</span></div>
+              {!isCompleted && recordedAllocation > 0 && (
+                <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">Historical allocation retained: {formatMoney(recordedAllocation)}. Because this payment is {payment.status.toLowerCase()}, it does not reduce the student's current balance.</div>
+              )}
             </div>
           </section>
         </div>
