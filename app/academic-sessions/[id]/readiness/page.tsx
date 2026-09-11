@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { requirePermission } from "../../../../../src/lib/authorization";
-import { getAcademicSessionById } from "../../../../../src/lib/academic-sessions";
-import { getAcademicSessionReadiness } from "../../../../../src/lib/academic-session-readiness";
+import { requirePermission } from "../../../../src/lib/authorization";
+import { getAcademicSessionById } from "../../../../src/lib/academic-sessions";
+import { getAcademicSessionReadiness } from "../../../../src/lib/academic-session-readiness";
 
 export default async function AcademicSessionReadinessPage({
   params,
