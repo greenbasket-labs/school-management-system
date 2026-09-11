@@ -10,7 +10,7 @@ The goal is **not** to build the largest system or copy another product. The goa
 - Teachers
 - Students
 - Parents / guardians
-- Cashiers and other staff
+- Cashiers, accountants and other staff
 
 The system should make school operations **simple, transparent, connected, and trustworthy**.
 
@@ -20,7 +20,7 @@ Most private schools have roughly the same core operations. Build that common 90
 
 ### Every feature must pass these questions
 
-1. **Who uses it?** Owner, admin, teacher, student, parent, cashier, or other staff.
+1. **Who uses it?** Owner, admin, teacher, student, parent, cashier, accountant, or other staff.
 2. **What real pain does it solve?** If the pain is unclear, do not build it yet.
 3. **What is the simplest useful workflow?** Remove unnecessary steps.
 4. **What should become transparent?** Users should not need to ask another person for information the system already knows.
@@ -53,12 +53,13 @@ A real private school should be able to:
 7. Define and assign fees.
 8. Receive and correctly allocate payments.
 9. See balances and financial history.
-10. Run examinations and enter results.
-11. Calculate grades/ranking according to school rules.
-12. Approve and publish results.
-13. Give parents/students useful portal access.
-14. See reports and important items needing attention.
-15. Close one academic session and prepare the next one without losing history.
+10. Manage staff compensation and record staff salary payments with clear responsibility and history.
+11. Run examinations and enter results.
+12. Calculate grades/ranking according to school rules.
+13. Approve and publish results.
+14. Give parents/students useful portal access.
+15. See reports and important items needing attention.
+16. Close one academic session and prepare the next one without losing history.
 
 The system should reduce unnecessary phone calls, paper chasing, manual calculations, duplicated entry, and uncertainty about what is happening in the school.
 
@@ -72,6 +73,7 @@ Should be able to quickly understand:
 - Student and staff status
 - Attendance issues
 - Fee collection and outstanding balances
+- Staff salary commitments and payments
 - Academic/result completion
 - Important items requiring attention
 - Historical activity and accountability
@@ -111,7 +113,7 @@ Should be able to see:
 
 Basic information should not require calling the school.
 
-### Cashier / Other Staff
+### Cashier / Accountant / Other Staff
 
 Should be able to complete assigned work quickly, with clear permissions and an audit trail where appropriate.
 
@@ -157,6 +159,7 @@ The following is the working roadmap. It is a guide, not permission to overbuild
 - Other staff
 - Staff roles/permissions
 - Staff attendance
+- Staff compensation / salary records
 - Staff lifecycle as needed
 
 ### GROUP 5 — Attendance
@@ -193,6 +196,7 @@ The following is the working roadmap. It is a guide, not permission to overbuild
 - Payment plans / installments
 - Outstanding balance handling
 - Payment correction/refund/cancellation workflow
+- Staff salary payment records as a small connected school-expense workflow
 
 ### GROUP 8 — Communication
 
@@ -267,10 +271,25 @@ This repository already contains substantial work across academic sessions, stud
 - Payment details clearly distinguish historical allocations from allocations that currently affect the student's balance after refund/cancellation.
 - Payment correction preserves the original payment record and removes its financial effect from current balances through status handling.
 
+### Staff finance principle — keep this small and transparent
+
+Staff pay is **not** becoming a full enterprise payroll system.
+
+The useful first workflow is only:
+
+1. Owner/admin defines or changes a staff member's agreed pay.
+2. An authorised accountant/finance user records a payment for a specific staff member and pay period.
+3. The system records amount, date, method/reference, who recorded it, and the related staff member.
+4. Owner/admin can see salary commitments, payments and history.
+5. Important changes and payments are auditable.
+
+Do **not** add tax engines, pensions, loans, complex deductions, attendance-based payroll, automated bank transfers, payslip engines, or statutory payroll calculations unless real school users prove they are needed.
+
 ### Areas still requiring completion or production hardening
 
 - Complete report-card / term-result workflow
 - Finish and integrate payment plans/installments at the database/workflow level
+- Implement the minimal staff compensation/payment workflow above
 - Finish production hardening of attendance settings/automation where genuinely needed
 - End-to-end finance verification with real-school scenarios
 - Verify portal workflows end-to-end
@@ -280,7 +299,7 @@ This repository already contains substantial work across academic sessions, stud
 
 ## 7. Current Priority
 
-**Finish GROUP 7 — Fees, Billing & Payments without overbuilding it.**
+**Finish GROUP 7 — Fees, Billing & Payments without overbuilding it, while connecting the minimum staff-pay workflow needed by real school owners.**
 
 Working sequence:
 
@@ -294,9 +313,10 @@ Working sequence:
 8. Fee Rollover
 9. Payment Correction / Refund / Cancellation
 10. Payment Plans / Installments
-11. End-to-end finance verification
+11. Minimal Staff Compensation / Salary Payments
+12. End-to-end finance verification
 
-The next finance step is **Payment Plans / Installments**, followed by a focused end-to-end finance verification. After that, move to the next highest-value unfinished school pain area.
+The next finance step remains **Payment Plans / Installments**. Then implement the minimal staff compensation/payment workflow and verify finance end-to-end. After that, move to the next highest-value unfinished school pain area.
 
 ## 8. Development Method
 
@@ -330,6 +350,8 @@ Examples:
 - A payment is money actually received.
 - A payment allocation explains where that money was applied.
 - A fee assignment represents what was charged.
+- A staff salary record explains the agreed compensation without silently changing past payments.
+- A staff payment represents money actually paid to a staff member, with the period and responsible user visible.
 - A rollover should not silently destroy historical financial or academic information.
 - Important lifecycle changes should be auditable.
 - Published academic information should have a clear status/history.
@@ -359,7 +381,7 @@ The system should feel like one connected school operating system:
 → **Academic structure**
 → **Students & staff**
 → **Attendance**
-→ **Fees & payments**
+→ **Fees, staff pay & payments**
 → **Exams & results**
 → **Parents/students**
 → **Reports & management**
