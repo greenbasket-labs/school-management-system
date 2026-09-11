@@ -8,8 +8,8 @@ export type PaymentAllocationCandidate = {
   schoolId: number;
   amount: number;
   allocatedAmount?: number;
-  dueDate?: Date | null;
-  createdAt?: Date | null;
+  dueDate?: Date | string | null;
+  createdAt?: Date | string | null;
   status: "ACTIVE" | "WAIVED" | "CANCELLED";
 };
 
@@ -51,24 +51,31 @@ function requirePositiveCents(amount: number, field: string) {
   return cents;
 }
 
+function toTime(value: Date | string | null | undefined) {
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === "string") {
+    const time = new Date(value).getTime();
+    return Number.isFinite(time) ? time : Number.POSITIVE_INFINITY;
+  }
+  return Number.POSITIVE_INFINITY;
+}
+
 function sortCandidates(
   candidates: PaymentAllocationCandidate[],
   strategy: PaymentAllocationStrategy,
 ) {
   return [...candidates].sort((a, b) => {
     if (strategy === "OLDEST_DUE") {
-      const aDue = a.dueDate?.getTime() ?? Number.POSITIVE_INFINITY;
-      const bDue = b.dueDate?.getTime() ?? Number.POSITIVE_INFINITY;
+      const aDue = toTime(a.dueDate);
+      const bDue = toTime(b.dueDate);
 
       if (aDue !== bDue) {
         return aDue - bDue;
       }
     }
 
-    const aCreated =
-      a.createdAt?.getTime() ?? Number.POSITIVE_INFINITY;
-    const bCreated =
-      b.createdAt?.getTime() ?? Number.POSITIVE_INFINITY;
+    const aCreated = toTime(a.createdAt);
+    const bCreated = toTime(b.createdAt);
 
     if (aCreated !== bCreated) {
       return aCreated - bCreated;
