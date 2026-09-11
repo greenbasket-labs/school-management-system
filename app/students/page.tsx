@@ -1,12 +1,38 @@
+import Link from "next/link";
 import { requirePermission } from "../../src/lib/authorization";
 import { getSchool } from "../../src/lib/school";
 import { getStudents } from "../../src/lib/students";
+import { db } from "../../src/prisma/db";
 
 export default async function StudentsPage() {
-  await requirePermission("students.view");
+  const user = await requirePermission("students.view");
 
   const school = await getSchool();
-  const students = await getStudents();
+
+  if (!school || school.id !== user.schoolId) {
+    throw new Error("School not found.");
+  }
+
+  const [students, classes] = await Promise.all([
+    getStudents(user.schoolId),
+    db.orm.public.SchoolClass.all(),
+  ]);
+
+  const schoolClasses = classes.filter(
+    (schoolClass) => schoolClass.schoolId === user.schoolId,
+  );
+
+  function getClassName(classId: number | null) {
+    if (!classId) return "Not assigned";
+
+    const schoolClass = schoolClasses.find(
+      (item) => item.id === classId,
+    );
+
+    if (!schoolClass) return "Not assigned";
+
+    return `${schoolClass.name}${schoolClass.section ? ` - ${schoolClass.section}` : ""}`;
+  }
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -14,7 +40,7 @@ export default async function StudentsPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-sm font-semibold text-blue-600">
-              {school?.name ?? "School Management System"}
+              {school.name}
             </p>
 
             <h1 className="mt-1 text-2xl font-bold text-slate-900">
@@ -23,19 +49,19 @@ export default async function StudentsPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <a
+            <Link
               href="/dashboard"
               className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               Dashboard
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/students/new"
               className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
             >
               Add Student
-            </a>
+            </Link>
           </div>
         </div>
       </header>
@@ -96,13 +122,9 @@ export default async function StudentsPage() {
                       .join(" ")}
                   </div>
 
-                  <div>
-                    {student.gender ?? "—"}
-                  </div>
+                  <div>{student.gender ?? "—"}</div>
 
-                  <div>
-                    {student.phone ?? "—"}
-                  </div>
+                  <div>{student.phone ?? "—"}</div>
 
                   <div>
                     <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
@@ -110,19 +132,15 @@ export default async function StudentsPage() {
                     </span>
                   </div>
 
-                  <div>
-                    {student.currentClassId
-                      ? `Class #${student.currentClassId}`
-                      : "Not assigned"}
-                  </div>
+                  <div>{getClassName(student.currentClassId)}</div>
 
                   <div>
-                    <a
+                    <Link
                       href={`/students/${student.id}`}
                       className="font-medium text-blue-600 hover:text-blue-700"
                     >
                       View
-                    </a>
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -137,12 +155,12 @@ export default async function StudentsPage() {
                     Start by registering the first student.
                   </p>
 
-                  <a
+                  <Link
                     href="/students/new"
                     className="mt-5 inline-block rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700"
                   >
                     Register Student
-                  </a>
+                  </Link>
                 </div>
               )}
             </div>
