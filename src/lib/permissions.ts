@@ -12,6 +12,13 @@ export async function getUserRoles(userId: number) {
 }
 
 export async function getUserPermissions(userId: number) {
+  const users = await db.orm.public.User.all();
+  const user = users.find((item) => item.id === userId);
+
+  if (!user || user.status !== "ACTIVE") {
+    return [];
+  }
+
   const userRoles = await db.orm.public.UserRole.all();
   const rolePermissions = await db.orm.public.RolePermission.all();
   const permissions = await db.orm.public.Permission.all();
