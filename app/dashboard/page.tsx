@@ -11,13 +11,17 @@ export default async function DashboardPage() {
 
   const school = await getSchool();
 
+  if (!school) {
+    throw new Error("School not found");
+  }
+
   return (
     <main className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div>
             <p className="text-sm font-semibold text-blue-600">
-              {school?.name ?? "School Management System"}
+              {school.name}
             </p>
 
             <h1 className="mt-1 text-2xl font-bold text-slate-900">
@@ -41,7 +45,7 @@ export default async function DashboardPage() {
           </p>
 
           <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-            {school?.name ?? "Your School"}
+            {school.name}
           </h2>
 
           <p className="mt-3 text-slate-500">
