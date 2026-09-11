@@ -13,7 +13,7 @@ export async function GET() {
       (item) =>
         item.sessionKey === session.sessionKey &&
         item.userId === session.userId,
-        );
+    );
 
     if (userSession) {
       await db.orm.public.UserSession
@@ -23,12 +23,9 @@ export async function GET() {
           revokedAt: new Date().toISOString(),
         });
 
-      const schools = await db.orm.public.School.all();
-      const school = schools[0];
-
-      if (school) {
+      if (userSession.schoolId) {
         await writeAuditLog({
-          schoolId: school.id,
+          schoolId: userSession.schoolId,
           userId: session.userId,
           action: "LOGOUT",
           entity: "UserSession",
