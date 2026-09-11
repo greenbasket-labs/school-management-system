@@ -263,10 +263,68 @@ export async function getStudentPayments(schoolId: number, studentId: number) {
 export async function getStudentFinancialSummary(schoolId: number, studentId: number) {
   const assignments = await getStudentFeeAssignments(schoolId, studentId);
   const payments = await getStudentPayments(schoolId, studentId);
-  const totalDue = assignments.filter((item) => item.status === "ACTIVE").reduce((total, item) => total + Number(item.amount), 0);
-  const totalPaid = payments.filter((item) => item.status === "COMPLETED").reduce((total, item) => total + Number(item.amount), 0);
-  const balance = totalDue - totalPaid;
-  return { totalDue, totalPaid, balance, assignments, payments };
+  const activeAssignments = assignments.filter((item) => item.status === "ACTIVE");
+  const completedPaymentIds = new Set(
+    payments.filter((payment) => payment.status === "COMPLETED").map((payment) => payment.id),
+  );
+
+  const paymentAllocations = await db.orm.public.PaymentAllocation.all();
+  const allocatedByAssignment = new Map<number, number>();
+
+  for (const allocation of paymentAllocations) {
+    if (
+      allocation.schoolId !== schoolId ||
+      allocation.studentId !== studentId ||
+      !completedPaymentIds.has(allocation.paymentId)
+    ) {
+      continue;
+    }
+
+    const current = allocatedByAssignment.get(allocation.feeAssignmentId) ?? 0;
+    allocatedByAssignment.set(
+      allocation.feeAssignmentId,
+      current + Number(allocation.amount),
+    );
+  }
+
+  const assignmentBalances = activeAssignments.map((assignment) => {
+    const amount = Number(assignment.amount);
+    const paidAmount = Math.min(
+      amount,
+      Math.max(0, allocatedByAssignment.get(assignment.id) ?? 0),
+    );
+    const outstandingAmount = Math.max(0, amount - paidAmount);
+
+    return {
+      ...assignment,
+      paidAmount,
+      outstandingAmount,
+    };
+  });
+
+  const totalDue = assignmentBalances.reduce(
+    (total, assignment) => total + Number(assignment.amount),
+    0,
+  );
+  const totalPaid = assignmentBalances.reduce(
+    (total, assignment) => total + assignment.paidAmount,
+    0,
+  );
+  const totalCompletedPayments = payments
+    .filter((payment) => payment.status === "COMPLETED")
+    .reduce((total, payment) => total + Number(payment.amount), 0);
+  const unallocatedCredit = Math.max(0, totalCompletedPayments - totalPaid);
+  const balance = Math.max(0, totalDue - totalPaid);
+
+  return {
+    totalDue,
+    totalPaid,
+    balance,
+    unallocatedCredit,
+    assignments,
+    assignmentBalances,
+    payments,
+  };
 }
 
 export async function createPayment(input: {
