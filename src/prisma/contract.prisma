@@ -140,6 +140,7 @@ model School {
   feeAssignments     FeeAssignment[]
   payments           Payment[]
   receipts           Receipt[]
+  paymentAllocations PaymentAllocation[]
 
   attendanceSetting  AttendanceSetting?
   attendanceRecords  AttendanceRecord[]
@@ -149,7 +150,7 @@ model School {
 
   results            Result[]
   features           SchoolFeature[]
-  announcements      Announcement[]
+  announcements     Announcement[]
 }
 
 // ------------------------------------------------------------
@@ -168,7 +169,7 @@ model User {
   status                UserStatus                 @default(PENDING)
 
   emailVerifiedAt       TimestamptzString?
-  phoneVerifiedAt       TimestamptzString?
+  phoneVerifiedAt        TimestamptzString?
   roleRestrictedUntil   TimestamptzString?
   roleRestrictionReason String?
 
@@ -178,7 +179,7 @@ model User {
   sessions              UserSession[]
   passwordRecoveries    PasswordRecovery[]
   auditLogs             AuditLog[]
-  announcementsCreated  Announcement[]             @relation("AnnouncementCreatedBy")
+  announcementsCreated Announcement[]             @relation("AnnouncementCreatedBy")
 
   paymentsReceived      Payment[]
 
@@ -257,8 +258,8 @@ model UserSession {
 
   passwordRecoveries PasswordRecovery[]
 
-  createdAt          TimestamptzString          @default(now())
-  updatedAt          temporal.updatedAtString()
+  createdAt           TimestamptzString          @default(now())
+  updatedAt           temporal.updatedAtString()
 
   @@index([userId])
   @@index([schoolId])
@@ -278,9 +279,9 @@ model PasswordRecovery {
   status              PasswordRecoveryStatus     @default(PENDING)
   reason              PasswordRecoveryReason     @default(PASSWORD_FORGOT)
 
-  tokenHash             String
-  verificationCodeHash  String?
-  newPasswordHash       String
+  tokenHash            String
+  verificationCodeHash String?
+  newPasswordHash      String
 
   requestedAt         TimestamptzString          @default(now())
   verifiedAt          TimestamptzString?
@@ -622,6 +623,7 @@ model Student {
 
   feeAssignments    FeeAssignment[]
   payments          Payment[]
+  paymentAllocations PaymentAllocation[]
 
   attendanceRecords AttendanceRecord[]
 
@@ -951,6 +953,8 @@ model FeeAssignment {
   term        Term?                      @relation(fields:[termId], references:[id])
   class       SchoolClass?               @relation(fields:[classId], references:[id])
 
+  paymentAllocations PaymentAllocation[]
+
   createdAt   TimestamptzString          @default(now())
   updatedAt   temporal.updatedAtString()
 
@@ -982,6 +986,7 @@ model Payment {
   student       Student                    @relation(fields:[studentId], references:[id])
   cashier       User                       @relation(fields:[cashierUserId], references:[id])
   receipt       Receipt?
+  allocations   PaymentAllocation[]
 
   createdAt     TimestamptzString          @default(now())
   updatedAt     TimestamptzString          @default(now())
@@ -991,6 +996,32 @@ model Payment {
   @@index([cashierUserId])
   @@index([paymentDate])
   @@index([status])
+}
+
+// ------------------------------------------------------------
+// PAYMENT ALLOCATIONS
+// ------------------------------------------------------------
+model PaymentAllocation {
+  id              Int                        @id @default(autoincrement())
+  schoolId        Int
+  paymentId       Int
+  feeAssignmentId Int
+  studentId       Int
+  amount          Decimal
+
+  school           School                    @relation(fields:[schoolId], references:[id])
+  payment          Payment                   @relation(fields:[paymentId], references:[id], onDelete: Cascade)
+  feeAssignment    FeeAssignment             @relation(fields:[feeAssignmentId], references:[id])
+  student          Student                   @relation(fields:[studentId], references:[id])
+
+  createdAt        TimestamptzString          @default(now())
+  updatedAt        temporal.updatedAtString()
+
+  @@unique([paymentId, feeAssignmentId])
+  @@index([schoolId])
+  @@index([paymentId])
+  @@index([feeAssignmentId])
+  @@index([studentId])
 }
 
 // ------------------------------------------------------------
