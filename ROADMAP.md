@@ -192,6 +192,7 @@ The following is the working roadmap. It is a guide, not permission to overbuild
 - Fee rollover
 - Payment plans / installments
 - Outstanding balance handling
+- Payment correction/refund/cancellation workflow
 
 ### GROUP 8 — Communication
 
@@ -253,6 +254,7 @@ This repository already contains substantial work across academic sessions, stud
 - Financial summary/reporting foundations
 - Fee rollover foundation
 - Payment-plan calculation engine
+- Controlled payment correction foundation (refund/cancel with reason, owner/admin control, preserved original payment and audit history)
 - Portal foundations
 - Audit logging
 - School feature/configuration foundation
@@ -262,7 +264,7 @@ This repository already contains substantial work across academic sessions, stud
 - Complete report-card / term-result workflow
 - Finish and integrate payment plans/installments at the database/workflow level
 - Finish production hardening of attendance settings/automation where genuinely needed
-- Verify finance workflows end-to-end
+- Verify finance workflows end-to-end, including correction/refund/cancellation
 - Verify portal workflows end-to-end
 - Improve activation/readiness checks where needed
 - Resolve existing TypeScript/build issues before treating the repository as production-ready
@@ -282,8 +284,9 @@ Working sequence:
 6. Student Statement
 7. Financial Reports
 8. Fee Rollover
-9. Payment Plans / Installments
-10. End-to-end finance verification
+9. Payment Correction / Refund / Cancellation
+10. Payment Plans / Installments
+11. End-to-end finance verification
 
 Then move to the next highest-value unfinished school pain area.
 
@@ -322,6 +325,8 @@ Examples:
 - A rollover should not silently destroy historical financial or academic information.
 - Important lifecycle changes should be auditable.
 - Published academic information should have a clear status/history.
+- A corrected payment should keep its original record and status history rather than being edited or deleted.
+- Refunded/cancelled payments must not continue reducing the student's current outstanding balance.
 
 When there is a choice between a convenient shortcut and preserving trustworthy history, preserve the history.
 
