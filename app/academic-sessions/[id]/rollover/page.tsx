@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 
-import { requirePermission } from "../../../../../src/lib/authorization";
-import { getAcademicSessionById } from "../../../../../src/lib/academic-sessions";
-import { createNextAcademicSession } from "../../../../../src/lib/academic-session-rollover";
+import { requirePermission } from "../../../../src/lib/authorization";
+import { getAcademicSessionById } from "../../../../src/lib/academic-sessions";
+import { createNextAcademicSession } from "../../../../src/lib/academic-session-rollover";
 
 export default async function AcademicSessionRolloverPage({
   params,
