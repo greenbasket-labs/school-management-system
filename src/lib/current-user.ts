@@ -16,7 +16,7 @@ export async function getCurrentUser() {
     (item) => item.id === session.userId,
   );
 
-  if (!user || user.status !== "ACTIVE") {
+  if (!user || user.status !== "ACTIVE" || user.schoolId === null) {
     session.destroy();
     return null;
   }
@@ -89,7 +89,7 @@ export async function isCurrentSessionLocked() {
     (item) => item.id === session.userId,
   );
 
-  if (!user) {
+  if (!user || user.schoolId === null) {
     return false;
   }
 
