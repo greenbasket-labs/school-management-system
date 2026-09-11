@@ -75,7 +75,38 @@ A group is practically complete when a real school can use its important workflo
 
 **Decision:** Group 2 is practically complete for the common 90% school workflow. Move forward rather than overbuilding academic configuration.
 
-### 3. Students — NOT YET REVIEWED
+### 3. Students — REVIEWED
+
+**Done / strong:**
+- Student registration creates a permanent student ID and stores core identity/contact information.
+- Student records are now scoped to the authenticated school in the main student listing and student data helpers.
+- Student profiles include identity, class, parents/guardians, fees/payments, and academic class history.
+- Student lifecycle supports PROMOTE, REPEAT, TRANSFER, WITHDRAW, and GRADUATE.
+- Lifecycle actions require a reason and preserve class/status history through audit records.
+- Promotion/repeat can prepare the next academic session through the controlled rollover path.
+- Student-to-class assignment validates school, active class, session ownership, and session status.
+- Student registration no longer accepts an arbitrary school's class; initial class assignment is limited to an active class in the active academic session.
+- Initial class assignment creates proper StudentClassHistory instead of only setting `currentClassId`.
+- Parent/guardian linking supports relationship and one primary guardian, with school-boundary validation on mutations.
+
+**Must-fix completed in this review:**
+- Student list no longer exposes students from other schools.
+- Student class display is resolved only from classes belonging to the current school.
+- Student registration class choices are limited to active classes in the active academic session.
+- Registration validates the selected class/session again on the server.
+- Registration records class history when a class is selected.
+- Student helper creation no longer chooses the first school in the database.
+- Student permanent-ID generation is school-aware while retaining the schema's globally unique ID requirement.
+
+**Still deferred / not a blocker:**
+- Bulk import/export.
+- Student photo/document management.
+- Rich admission/enrollment workflow beyond the core registration path.
+- More advanced guardian communication/preferences.
+- Transactional hardening around multi-record lifecycle operations.
+
+**Decision:** Group 3 is practically complete for the common 90% school workflow. Move forward rather than adding an oversized student-information system.
+
 ### 4. Staff — NOT YET REVIEWED
 ### 5. Attendance — NOT YET REVIEWED
 ### 6. Exams & Results — NOT YET REVIEWED
