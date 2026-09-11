@@ -45,7 +45,7 @@ A group is practically complete when a real school can use its important workflo
 
 **Decision:** Group 1 is complete enough for the real-school workflow. Do not add more here unless a real operational need appears.
 
-### 2. Academic Structure — REVIEWED
+### 2. Academic Structure — PRACTICALLY COMPLETE
 
 **Done / strong:**
 - Academic sessions can be created per school with name, start date, end date, and DRAFT status.
@@ -75,39 +75,56 @@ A group is practically complete when a real school can use its important workflo
 
 **Decision:** Group 2 is practically complete for the common 90% school workflow. Move forward rather than overbuilding academic configuration.
 
-### 3. Students — REVIEWED
+### 3. Students — PRACTICALLY COMPLETE
 
 **Done / strong:**
-- Student registration creates a permanent student ID and stores core identity/contact information.
-- Student records are now scoped to the authenticated school in the main student listing and student data helpers.
-- Student profiles include identity, class, parents/guardians, fees/payments, and academic class history.
-- Student lifecycle supports PROMOTE, REPEAT, TRANSFER, WITHDRAW, and GRADUATE.
-- Lifecycle actions require a reason and preserve class/status history through audit records.
-- Promotion/repeat can prepare the next academic session through the controlled rollover path.
-- Student-to-class assignment validates school, active class, session ownership, and session status.
-- Student registration no longer accepts an arbitrary school's class; initial class assignment is limited to an active class in the active academic session.
-- Initial class assignment creates proper StudentClassHistory instead of only setting `currentClassId`.
-- Parent/guardian linking supports relationship and one primary guardian, with school-boundary validation on mutations.
+- Student registration and permanent school IDs.
+- Student profiles and editable core information.
+- School-scoped student access and profile validation.
+- Current class assignment with StudentClassHistory.
+- Student lifecycle: PROMOTE, REPEAT, TRANSFER, WITHDRAW, GRADUATE.
+- Parent/guardian linking with relationship and primary-guardian support.
+- Lifecycle actions preserve class history and are auditable.
+- Rollover preparation supports promotion/repeat/terminal decisions.
+- Class assignment validates student, class, school, and academic-session boundaries.
 
 **Must-fix completed in this review:**
-- Student list no longer exposes students from other schools.
-- Student class display is resolved only from classes belonging to the current school.
-- Student registration class choices are limited to active classes in the active academic session.
-- Registration validates the selected class/session again on the server.
-- Registration records class history when a class is selected.
-- Student helper creation no longer chooses the first school in the database.
-- Student permanent-ID generation is school-aware while retaining the schema's globally unique ID requirement.
+- Student registration now validates the selected class against the authenticated user's school and active academic session before creating the student/class relationship.
+- Teacher/student-related school context no longer relies on the first school in the database.
 
 **Still deferred / not a blocker:**
 - Bulk import/export.
 - Student photo/document management.
-- Rich admission/enrollment workflow beyond the core registration path.
-- More advanced guardian communication/preferences.
-- Transactional hardening around multi-record lifecycle operations.
+- Advanced admissions workflows.
+- Transactional hardening for high-concurrency ID generation.
 
-**Decision:** Group 3 is practically complete for the common 90% school workflow. Move forward rather than adding an oversized student-information system.
+**Decision:** Group 3 is practically complete for the common 90% school workflow. Move forward rather than overbuilding student management.
 
-### 4. Staff — NOT YET REVIEWED
+### 4. Staff & Teachers — IN REVIEW
+
+**Done / strong:**
+- Teacher directory and school-scoped teacher lookup.
+- Teacher registration with permanent IDs and duplicate phone/email checks.
+- Teacher active/inactive status.
+- Class-subject assignments can reference active teachers and validate school ownership.
+- Staff attendance supports OWNER, ADMIN, TEACHER, CASHIER, and STAFF users.
+- Staff check-in/check-out, lateness calculation, missed-checkout flag, correction fields, and audit records exist.
+- Staff attendance settings support start time, grace period, closing time, checkout requirement, and missed-checkout behavior.
+- Current-user and school context hardening is in place for staff-facing workflows.
+
+**Must-fix completed in this review:**
+- Teacher creation now derives school ownership from the authenticated user instead of selecting the first school in the database.
+- Teacher permanent-ID sequencing is scoped to the authenticated school.
+- Teacher creation audit records now identify the authenticated actor.
+
+**Still under review:**
+- General staff account lifecycle beyond teachers.
+- Teacher-to-user account provisioning and deactivation linkage.
+- Staff attendance settings being consumed consistently by the attendance engine.
+- Automatic missed-checkout processing and timezone behavior.
+
+**Decision:** Continue focused review, but do not expand into HR/payroll or unnecessary staff-management features.
+
 ### 5. Attendance — NOT YET REVIEWED
 ### 6. Exams & Results — NOT YET REVIEWED
 ### 7. Fees, Billing & Payments — IN PROGRESS
