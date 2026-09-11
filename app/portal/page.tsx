@@ -756,18 +756,26 @@ async function getStudentFinance(
 function calculateFinance(
   feeAssignments: Array<{
     amount: unknown;
+    status: unknown;
   }>,
   payments: Array<{
     amount: unknown;
+    status: unknown;
   }>,
 ) {
   const totalDue = feeAssignments.reduce(
-    (sum, fee) => sum + Number(fee.amount),
+    (sum, fee) =>
+      String(fee.status) === "ACTIVE"
+        ? sum + Number(fee.amount)
+        : sum,
     0,
   );
 
   const totalPaid = payments.reduce(
-    (sum, payment) => sum + Number(payment.amount),
+    (sum, payment) =>
+      String(payment.status) === "COMPLETED"
+        ? sum + Number(payment.amount)
+        : sum,
     0,
   );
 
