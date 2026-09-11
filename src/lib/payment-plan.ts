@@ -25,6 +25,25 @@ export type PaymentPlanSummary = {
   status: PaymentPlanStatus;
 };
 
+export type InstallmentAllocationCandidate = {
+  installmentId: number;
+  sequence: number;
+  amount: number;
+  paidAmount: number;
+};
+
+export type InstallmentAllocation = {
+  installmentId: number;
+  sequence: number;
+  amount: number;
+};
+
+export type InstallmentAllocationResult = {
+  paymentAmount: number;
+  allocations: InstallmentAllocation[];
+  unallocatedAmount: number;
+};
+
 function cents(value: number) {
   if (!Number.isFinite(value) || value < 0) throw new Error("Amount must be a valid non-negative number.");
   return Math.round(value * 100);
@@ -117,6 +136,72 @@ export function getInstallmentStatus(input: {
   if (paidCents >= amountCents) return "PAID" as const;
   if (paidCents > 0) return asOf.getTime() > input.dueDate.getTime() ? "OVERDUE_PARTIAL" as const : "PARTIAL" as const;
   return asOf.getTime() > input.dueDate.getTime() ? "OVERDUE" as const : "PENDING" as const;
+}
+
+/**
+ * Allocates a payment against the earliest outstanding installments first.
+ * This is a pure calculation helper; persistence and school/permission checks
+ * remain in the payment workflow.
+ */
+export function allocatePaymentAcrossInstallments(input: {
+  paymentAmount: number;
+  installments: InstallmentAllocationCandidate[];
+}): InstallmentAllocationResult {
+  const paymentCents = cents(input.paymentAmount);
+  if (paymentCents <= 0) throw new Error("Payment amount must be greater than zero.");
+
+  const seen = new Set<number>();
+  const candidates = input.installments
+    .map((installment, index) => {
+      if (!Number.isInteger(installment.installmentId) || installment.installmentId <= 0) {
+        throw new Error(`Installment ${index + 1} has an invalid id.`);
+      }
+      if (seen.has(installment.installmentId)) {
+        throw new Error(`Installment ${installment.installmentId} was provided more than once.`);
+      }
+      seen.add(installment.installmentId);
+
+      if (!Number.isInteger(installment.sequence) || installment.sequence <= 0) {
+        throw new Error(`Installment ${installment.installmentId} has an invalid sequence.`);
+      }
+
+      const amountCents = cents(installment.amount);
+      if (amountCents <= 0) throw new Error(`Installment ${installment.installmentId} must be greater than zero.`);
+
+      const paidCents = cents(installment.paidAmount);
+      if (paidCents > amountCents) {
+        throw new Error(`Installment ${installment.installmentId} cannot have paid amount above its amount.`);
+      }
+
+      return {
+        installmentId: installment.installmentId,
+        sequence: installment.sequence,
+        outstandingCents: amountCents - paidCents,
+      };
+    })
+    .sort((a, b) => a.sequence - b.sequence);
+
+  let remaining = paymentCents;
+  const allocations: InstallmentAllocation[] = [];
+
+  for (const installment of candidates) {
+    if (remaining <= 0) break;
+    if (installment.outstandingCents <= 0) continue;
+
+    const allocated = Math.min(remaining, installment.outstandingCents);
+    allocations.push({
+      installmentId: installment.installmentId,
+      sequence: installment.sequence,
+      amount: money(allocated),
+    });
+    remaining -= allocated;
+  }
+
+  return {
+    paymentAmount: money(paymentCents),
+    allocations,
+    unallocatedAmount: money(remaining),
+  };
 }
 
 export function summarizePaymentPlan(input: {
