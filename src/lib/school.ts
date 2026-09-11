@@ -1,10 +1,17 @@
 import { db } from "../prisma/db";
+import { getCurrentUser } from "./current-user";
 import { writeAuditLog } from "./audit";
 
 export async function getSchool() {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser?.schoolId) {
+    return null;
+  }
+
   const schools = await db.orm.public.School.all();
 
-  return schools[0] ?? null;
+  return schools.find((school) => school.id === currentUser.schoolId) ?? null;
 }
 
 export async function updateSchool(input: {
