@@ -4,6 +4,7 @@ import { requirePermission } from "../../../src/lib/authorization";
 import { getSchool } from "../../../src/lib/school";
 import { db } from "../../../src/prisma/db";
 import PaymentCorrectionActions from "./payment-correction-actions";
+import PrintReceiptButton from "./print-receipt-button";
 
 function formatMoney(value: unknown) {
   const amount = Number(value ?? 0);
@@ -89,9 +90,12 @@ export default async function PaymentDetailsPage({ params }: { params: Promise<{
     : "Unknown Student";
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-8">
-      <div className="mx-auto max-w-5xl">
-        <Link href="/payments" className="text-sm font-medium text-slate-500 hover:text-slate-900">← Payment History</Link>
+    <main className="min-h-screen bg-slate-50 px-6 py-8 print-page">
+      <div className="mx-auto max-w-5xl print-screen-content">
+        <div className="print-toolbar">
+          <Link href="/payments" className="text-sm font-medium text-slate-500 hover:text-slate-900">← Payment History</Link>
+          {receipt && <PrintReceiptButton />}
+        </div>
 
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -181,6 +185,41 @@ export default async function PaymentDetailsPage({ params }: { params: Promise<{
           )}
         </section>
       </div>
+
+      {receipt && (
+        <section className="print-receipt mx-auto max-w-2xl rounded-xl border border-slate-200 bg-white p-8 text-slate-900">
+          <header className="border-b border-slate-300 pb-5 text-center">
+            <h1 className="text-2xl font-bold">{school.name}</h1>
+            {school.address && <p className="mt-1 text-sm">{school.address}</p>}
+            {(school.phone || school.email) && <p className="mt-1 text-sm">{[school.phone, school.email].filter(Boolean).join(" • ")}</p>}
+            <h2 className="mt-5 text-xl font-bold uppercase tracking-wide">Payment Receipt</h2>
+            <p className="mt-1 text-sm font-semibold">{receipt.receiptNumber}</p>
+          </header>
+
+          <div className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
+            <div><span className="text-slate-500">Student:</span> <strong>{studentName}</strong></div>
+            <div><span className="text-slate-500">Date:</span> <strong>{formatDate(payment.paymentDate)}</strong></div>
+            <div><span className="text-slate-500">Payment method:</span> <strong>{formatMethod(payment.method)}</strong></div>
+            <div><span className="text-slate-500">Reference:</span> <strong>{payment.reference ?? "—"}</strong></div>
+          </div>
+
+          <table className="mt-7 w-full text-sm">
+            <thead><tr className="border-b border-slate-300"><th className="py-3 text-left">Fee</th><th className="py-3 text-right">Amount</th></tr></thead>
+            <tbody>
+              {paymentAllocations.map((allocation) => (
+                <tr key={allocation.id} className="border-b border-slate-100"><td className="py-3">{feeName(allocation.feeAssignmentId)}</td><td className="py-3 text-right">{formatMoney(allocation.amount)}</td></tr>
+              ))}
+            </tbody>
+            <tfoot><tr><td className="pt-4 text-lg font-bold">Total Paid</td><td className="pt-4 text-right text-lg font-bold">{formatMoney(payment.amount)}</td></tr></tfoot>
+          </table>
+
+          <div className="mt-8 flex justify-between border-t border-slate-300 pt-5 text-sm">
+            <span>Received by: <strong>{cashier?.username ?? cashier?.email ?? cashier?.phone ?? "Unknown User"}</strong></span>
+            <span>Status: <strong>{payment.status}</strong></span>
+          </div>
+          <p className="mt-8 text-center text-xs text-slate-500">Keep this receipt for your records.</p>
+        </section>
+      )}
     </main>
   );
 }
