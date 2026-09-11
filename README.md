@@ -25,7 +25,7 @@ A group is practically complete when a real school can use its important workflo
 
 ## Group Status
 
-### 1. School & Organization — REVIEWED
+### 1. School & Organization — PRACTICALLY COMPLETE
 
 **Done / strong:**
 - School registration creates the initial school and Owner account.
@@ -38,14 +38,43 @@ A group is practically complete when a real school can use its important workflo
 - User uniqueness is scoped by school for username, email, and phone.
 - The data model supports multiple schools.
 
-**Still to decide / later:**
+**Still deferred / not a blocker:**
 - Logo upload/management (schema has `logoUrl`, but the settings workflow does not yet provide complete logo management).
 - Registration atomicity and additional deployment/onboarding hardening.
 - Domain/tenant provisioning belongs to the wider platform/onboarding layer, not the core school workflow.
 
-**Decision rule:** Do not add more School & Organization features unless a real school workflow needs them.
+**Decision:** Group 1 is complete enough for the real-school workflow. Do not add more here unless a real operational need appears.
 
-### 2. Academic Structure — NOT YET REVIEWED
+### 2. Academic Structure — REVIEWED
+
+**Done / strong:**
+- Academic sessions can be created per school with name, start date, end date, and DRAFT status.
+- Sessions have an explicit lifecycle: DRAFT → ACTIVE → COMPLETED → ARCHIVED.
+- Activation checks academic readiness and prevents multiple active sessions for the same school.
+- Session completion and archival require a reason and are audited.
+- Terms support First, Second, and Third Term.
+- Terms have names, dates, and active/inactive state.
+- Only one active term is maintained within a session.
+- Classes are linked to an academic session and school.
+- Classes support name, section, class teacher, and active/inactive status.
+- Duplicate class name + section is prevented within the same school/session.
+- Subjects are school-scoped and support lookup/search/active filtering.
+- Class-subject assignments prevent duplicate subject assignments and validate school/teacher ownership and teacher status.
+- Academic-session rollover and readiness foundations connect the academic structure to the next-session workflow.
+
+**Must-fix completed in this review:**
+- Terms can no longer be added to COMPLETED or ARCHIVED sessions.
+- Term dates must stay inside the academic-session dates.
+- Term dates cannot overlap another term in the same session.
+- Classes can no longer be created against COMPLETED or ARCHIVED sessions.
+
+**Still deferred / not a blocker:**
+- More advanced academic structure such as streams/programs, departments, campuses, houses, or timetable-specific structures.
+- Rich term editing/lifecycle UI beyond the current operational needs.
+- Additional database-level uniqueness/transaction hardening where the current application validation is sufficient for now.
+
+**Decision:** Group 2 is practically complete for the common 90% school workflow. Move forward rather than overbuilding academic configuration.
+
 ### 3. Students — NOT YET REVIEWED
 ### 4. Staff — NOT YET REVIEWED
 ### 5. Attendance — NOT YET REVIEWED
