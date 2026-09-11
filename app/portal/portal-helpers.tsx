@@ -68,7 +68,7 @@ export async function getStudentFinance(
   studentId: number,
 ) {
   const feeAssignments = await db.orm.public.FeeAssignment.all();
-  const payments = await db.orm.public.Payment.all();
+  const allocations = await db.orm.public.PaymentAllocation.all();
 
   return calculateFinance(
     feeAssignments.filter(
@@ -76,17 +76,17 @@ export async function getStudentFinance(
         fee.schoolId === schoolId &&
         fee.studentId === studentId,
     ),
-    payments.filter(
-      (payment) =>
-        payment.schoolId === schoolId &&
-        payment.studentId === studentId,
+    allocations.filter(
+      (allocation) =>
+        allocation.schoolId === schoolId &&
+        allocation.studentId === studentId,
     ),
   );
 }
 
 export function calculateFinance(
   feeAssignments: Array<{ amount: unknown; status: unknown }>,
-  payments: Array<{ amount: unknown; status: unknown }>,
+  allocations: Array<{ amount: unknown }>,
 ) {
   const totalDue = feeAssignments.reduce(
     (sum, fee) =>
@@ -96,11 +96,8 @@ export function calculateFinance(
     0,
   );
 
-  const totalPaid = payments.reduce(
-    (sum, payment) =>
-      String(payment.status) === "COMPLETED"
-        ? sum + Number(payment.amount)
-        : sum,
+  const totalPaid = allocations.reduce(
+    (sum, allocation) => sum + Number(allocation.amount),
     0,
   );
 
