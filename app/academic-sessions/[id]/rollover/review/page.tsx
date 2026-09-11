@@ -2,11 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Temporal } from "@js-temporal/polyfill";
 
-import { requirePermission } from "../../../../../../src/lib/authorization";
-import { getAcademicSessionById } from "../../../../../../src/lib/academic-sessions";
-import { getActiveClassesForSession } from "../../../../../../src/lib/classes";
-import { applyStudentLifecycleAction } from "../../../../../../src/lib/student-lifecycle";
-import { getStudentRolloverCandidates } from "../../../../../../src/lib/student-rollover";
+import { requirePermission } from "../../../../../src/lib/authorization";
+import { getAcademicSessionById } from "../../../../../src/lib/academic-sessions";
+import { getActiveClassesForSession } from "../../../../../src/lib/classes";
+import { applyStudentLifecycleAction } from "../../../../../src/lib/student-lifecycle";
+import { getStudentRolloverCandidates } from "../../../../../src/lib/student-rollover";
 
 export default async function StudentRolloverReviewPage({
   params,
@@ -25,7 +25,7 @@ export default async function StudentRolloverReviewPage({
     redirect(`/academic-sessions/${targetSessionId}`);
   }
 
-  const sessions = await import("../../../../../../src/prisma/db").then(({ db }) =>
+  const sessions = await import("../../../../../src/prisma/db").then(({ db }) =>
     db.orm.public.AcademicSession.all(),
   );
 
