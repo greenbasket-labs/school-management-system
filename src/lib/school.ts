@@ -23,6 +23,10 @@ export async function updateSchool(input: {
   website: string;
   principalName: string;
   registrationInfo: string;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  fontFamily: string;
 }) {
   const school = await getSchool();
 
@@ -41,6 +45,10 @@ export async function updateSchool(input: {
       website: input.website,
       principalName: input.principalName,
       registrationInfo: input.registrationInfo,
+      primaryColor: input.primaryColor,
+      secondaryColor: input.secondaryColor,
+      accentColor: input.accentColor,
+      fontFamily: input.fontFamily,
     });
 
   await writeAuditLog({
@@ -57,6 +65,10 @@ export async function updateSchool(input: {
       website: school.website,
       principalName: school.principalName,
       registrationInfo: school.registrationInfo,
+      primaryColor: school.primaryColor,
+      secondaryColor: school.secondaryColor,
+      accentColor: school.accentColor,
+      fontFamily: school.fontFamily,
     },
     newValue: {
       name: input.name,
@@ -67,6 +79,10 @@ export async function updateSchool(input: {
       website: input.website,
       principalName: input.principalName,
       registrationInfo: input.registrationInfo,
+      primaryColor: input.primaryColor,
+      secondaryColor: input.secondaryColor,
+      accentColor: input.accentColor,
+      fontFamily: input.fontFamily,
     },
   });
 
