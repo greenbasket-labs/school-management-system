@@ -1,6 +1,5 @@
 import { db } from "../prisma/db";
 import { getSession } from "./session";
-import { getSchool } from "./school";
 
 const INACTIVITY_LIMIT_MS = 2 * 60 * 60 * 1000;
 
@@ -11,19 +10,10 @@ export async function getCurrentUser() {
     return null;
   }
 
-  const school = await getSchool();
-
-  if (!school) {
-    session.destroy();
-    return null;
-  }
-
   const users = await db.orm.public.User.all();
 
   const user = users.find(
-    (item) =>
-      item.id === session.userId &&
-      item.schoolId === school.id,
+    (item) => item.id === session.userId,
   );
 
   if (!user || user.status !== "ACTIVE") {
@@ -38,7 +28,7 @@ export async function getCurrentUser() {
     (item) =>
       item.sessionKey === session.sessionKey &&
       item.userId === user.id &&
-      item.schoolId === school.id,
+      item.schoolId === user.schoolId,
   );
 
   if (!userSession) {
@@ -94,13 +84,23 @@ export async function isCurrentSessionLocked() {
     return false;
   }
 
+  const users = await db.orm.public.User.all();
+  const user = users.find(
+    (item) => item.id === session.userId,
+  );
+
+  if (!user) {
+    return false;
+  }
+
   const sessions =
     await db.orm.public.UserSession.all();
 
   const userSession = sessions.find(
     (item) =>
       item.sessionKey === session.sessionKey &&
-      item.userId === session.userId,
+      item.userId === session.userId &&
+      item.schoolId === user.schoolId,
   );
 
   return userSession?.status === "LOCKED";
