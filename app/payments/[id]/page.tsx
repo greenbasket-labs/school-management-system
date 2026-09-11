@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { requirePermission } from "../../../src/lib/authorization";
 import { getSchool } from "../../../src/lib/school";
 import { db } from "../../../src/prisma/db";
+import PaymentCorrectionActions from "./payment-correction-actions";
 
 function formatMoney(value: unknown) {
   const amount = Number(value ?? 0);
@@ -50,13 +51,18 @@ export default async function PaymentDetailsPage({ params }: { params: Promise<{
   if (!payment) notFound();
 
   const student = students.find((item) => item.id === payment.studentId && item.schoolId === school.id);
-  const cashier = users.find((item) => item.id === payment.userId && item.schoolId === school.id);
+  const cashier = users.find((item) => item.id === payment.cashierUserId && item.schoolId === school.id);
   const receipt = receipts.find((item) => item.paymentId === payment.id && item.schoolId === school.id);
   const paymentAllocations = allocations.filter((item) => item.paymentId === payment.id && item.schoolId === school.id);
+  const completedPaymentIds = new Set(
+    payments
+      .filter((item) => item.schoolId === school.id && item.studentId === payment.studentId && item.status === "COMPLETED")
+      .map((item) => item.id),
+  );
 
   const studentAssignments = assignments.filter((item) => item.studentId === payment.studentId && item.schoolId === school.id && item.status === "ACTIVE");
   const studentAllocationTotals = allocations
-    .filter((item) => item.studentId === payment.studentId && item.schoolId === school.id)
+    .filter((item) => item.studentId === payment.studentId && item.schoolId === school.id && completedPaymentIds.has(item.paymentId))
     .reduce((map, item) => {
       map.set(item.feeAssignmentId, (map.get(item.feeAssignmentId) ?? 0) + Number(item.amount));
       return map;
@@ -67,6 +73,7 @@ export default async function PaymentDetailsPage({ params }: { params: Promise<{
   const balance = Math.max(0, totalDue - totalAllocated);
   const paymentAllocated = paymentAllocations.reduce((sum, item) => sum + Number(item.amount), 0);
   const unallocated = Math.max(0, Number(payment.amount) - paymentAllocated);
+  const canCorrect = payment.status === "COMPLETED" && (user.userType === "OWNER" || user.userType === "ADMIN");
 
   function feeName(feeAssignmentId: number) {
     const assignment = assignments.find((item) => item.id === feeAssignmentId);
@@ -145,9 +152,11 @@ export default async function PaymentDetailsPage({ params }: { params: Promise<{
           </section>
         </div>
 
+        <PaymentCorrectionActions paymentId={payment.id} canCorrect={canCorrect} />
+
         <section className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="font-semibold text-slate-900">Student Fee Position</h2>
-          <p className="mt-1 text-sm text-slate-500">Current active fee assignments after recorded payments.</p>
+          <p className="mt-1 text-sm text-slate-500">Current active fee assignments after recorded completed payments.</p>
           {studentAssignments.length === 0 ? (
             <div className="mt-5 text-sm text-slate-500">No active fee assignments found.</div>
           ) : (
