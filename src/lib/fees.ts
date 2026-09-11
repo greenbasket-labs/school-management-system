@@ -358,10 +358,26 @@ export async function createPayment(input: {
     (assignment) => assignment.schoolId === input.schoolId && assignment.studentId === input.studentId && assignment.status === "ACTIVE",
   );
 
+  const payments = await db.orm.public.Payment.all();
+  const completedPaymentIds = new Set(
+    payments
+      .filter(
+        (payment) =>
+          payment.schoolId === input.schoolId &&
+          payment.studentId === input.studentId &&
+          payment.status === "COMPLETED",
+      )
+      .map((payment) => payment.id),
+  );
+
   const paymentAllocations = await db.orm.public.PaymentAllocation.all();
   const allocatedByAssignment = new Map<number, number>();
   for (const allocation of paymentAllocations) {
-    if (allocation.schoolId !== input.schoolId || allocation.studentId !== input.studentId) continue;
+    if (
+      allocation.schoolId !== input.schoolId ||
+      allocation.studentId !== input.studentId ||
+      !completedPaymentIds.has(allocation.paymentId)
+    ) continue;
     const current = allocatedByAssignment.get(allocation.feeAssignmentId) ?? 0;
     allocatedByAssignment.set(allocation.feeAssignmentId, current + Number(allocation.amount));
   }
