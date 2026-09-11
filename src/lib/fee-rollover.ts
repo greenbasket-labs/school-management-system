@@ -99,6 +99,9 @@ export async function applyFeeRollover(input: {
 }) {
   const reason = input.reason.trim();
   if (!reason) throw new Error("A reason is required for fee rollover.");
+  if (input.mode === "MANUAL_TRANSFER" && (!Array.isArray(input.studentIds) || input.studentIds.length === 0)) {
+    throw new Error("Select at least one student for manual fee transfer.");
+  }
 
   const sessions = await db.orm.public.AcademicSession.all();
   const sourceSession = sessions.find((item) => item.id === input.sourceSessionId);
@@ -128,7 +131,7 @@ export async function applyFeeRollover(input: {
       assignment.schoolId === sourceSession.schoolId &&
       assignment.sessionId === sourceSession.id &&
       assignment.status === "ACTIVE" &&
-      (input.mode !== "MANUAL_TRANSFER" || !input.studentIds?.length || input.studentIds.includes(assignment.studentId)),
+      (input.mode !== "MANUAL_TRANSFER" || input.studentIds!.includes(assignment.studentId)),
   );
 
   if (input.mode === "HISTORICAL_OUTSTANDING" || input.mode === "CLEAR_WAIVE") {
