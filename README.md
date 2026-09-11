@@ -26,203 +26,59 @@ A group is practically complete when a real school can use its important workflo
 ## Group Status
 
 ### 1. School & Organization — PRACTICALLY COMPLETE
-
-**Done / strong:**
-- School registration creates the initial school and Owner account.
-- School identity/settings: name, motto, address, phone, email, website, principal/head, registration information.
-- School settings require `school.view` / `school.edit` permissions.
-- School updates are audited.
-- Current-user resolution follows the authenticated user's `schoolId`, rather than blindly selecting the first school.
-- Dashboard and portal school context follow the authenticated user's school.
-- Permission checks reject missing/inactive users.
-- User uniqueness is scoped by school for username, email, and phone.
-- The data model supports multiple schools.
-
-**Still deferred / not a blocker:**
-- Logo upload/management (schema has `logoUrl`, but the settings workflow does not yet provide complete logo management).
-- Registration atomicity and additional deployment/onboarding hardening.
-- Domain/tenant provisioning belongs to the wider platform/onboarding layer, not the core school workflow.
-
-**Decision:** Group 1 is complete enough for the real-school workflow. Do not add more here unless a real operational need appears.
-
 ### 2. Academic Structure — PRACTICALLY COMPLETE
-
-**Done / strong:**
-- Academic sessions can be created per school with name, start date, end date, and DRAFT status.
-- Sessions have an explicit lifecycle: DRAFT → ACTIVE → COMPLETED → ARCHIVED.
-- Activation checks academic readiness and prevents multiple active sessions for the same school.
-- Session completion and archival require a reason and are audited.
-- Terms support First, Second, and Third Term.
-- Terms have names, dates, and active/inactive state.
-- Only one active term is maintained within a session.
-- Classes are linked to an academic session and school.
-- Classes support name, section, class teacher, and active/inactive status.
-- Duplicate class name + section is prevented within the same school/session.
-- Subjects are school-scoped and support lookup/search/active filtering.
-- Class-subject assignments prevent duplicate subject assignments and validate school/teacher ownership and teacher status.
-- Academic-session rollover and readiness foundations connect the academic structure to the next-session workflow.
-
-**Must-fix completed in this review:**
-- Terms can no longer be added to COMPLETED or ARCHIVED sessions.
-- Term dates must stay inside the academic-session dates.
-- Term dates cannot overlap another term in the same session.
-- Classes can no longer be created against COMPLETED or ARCHIVED sessions.
-
-**Still deferred / not a blocker:**
-- More advanced academic structure such as streams/programs, departments, campuses, houses, or timetable-specific structures.
-- Rich term editing/lifecycle UI beyond the current operational needs.
-- Additional database-level uniqueness/transaction hardening where the current application validation is sufficient for now.
-
-**Decision:** Group 2 is practically complete for the common 90% school workflow. Move forward rather than overbuilding academic configuration.
-
 ### 3. Students — PRACTICALLY COMPLETE
-
-**Done / strong:**
-- Student registration and permanent school IDs.
-- Student profiles and editable core information.
-- School-scoped student access and profile validation.
-- Current class assignment with StudentClassHistory.
-- Student lifecycle: PROMOTE, REPEAT, TRANSFER, WITHDRAW, GRADUATE.
-- Parent/guardian linking with relationship and primary-guardian support.
-- Lifecycle actions preserve class history and are auditable.
-- Rollover preparation supports promotion/repeat/terminal decisions.
-- Class assignment validates student, class, school, and academic-session boundaries.
-
-**Must-fix completed in this review:**
-- Student registration now validates the selected class against the authenticated user's school and active academic session before creating the student/class relationship.
-- Teacher/student-related school context no longer relies on the first school in the database.
-
-**Still deferred / not a blocker:**
-- Bulk import/export.
-- Student photo/document management.
-- Advanced admissions workflows.
-- Transactional hardening for high-concurrency ID generation.
-
-**Decision:** Group 3 is practically complete for the common 90% school workflow. Move forward rather than overbuilding student management.
-
 ### 4. Staff & Teachers — IN REVIEW
-
-**Done / strong:**
-- Teacher directory and school-scoped teacher lookup.
-- Teacher registration with permanent IDs and duplicate phone/email checks.
-- Teacher active/inactive status.
-- Class-subject assignments can reference active teachers and validate school ownership.
-- Staff attendance supports OWNER, ADMIN, TEACHER, CASHIER, and STAFF users.
-- Staff check-in/check-out, lateness calculation, missed-checkout flag, correction fields, and audit records exist.
-- Staff attendance settings support start time, grace period, closing time, checkout requirement, and missed-checkout behavior.
-- Current-user and school context hardening is in place for staff-facing workflows.
-
-**Must-fix completed in this review:**
-- Teacher creation now derives school ownership from the authenticated user instead of selecting the first school in the database.
-- Teacher permanent-ID sequencing is scoped to the authenticated school.
-- Teacher creation audit records now identify the authenticated actor.
-
-**Still under review:**
-- General staff account lifecycle beyond teachers.
-- Teacher-to-user account provisioning and deactivation linkage.
-- Staff attendance settings being consumed consistently by the attendance engine.
-- Automatic missed-checkout processing and timezone behavior.
-
-**Decision:** Continue focused review, but do not expand into HR/payroll or unnecessary staff-management features.
-
 ### 5. Attendance — PRACTICALLY COMPLETE FOR CURRENT CORE WORKFLOW
-
-**Done / strong:**
-- Student attendance supports configurable one- or two-call daily attendance.
-- Attendance marking/edit permissions are enforced.
-- Student/class/school boundaries are validated.
-- Duplicate attendance entries are prevented unless explicitly editing.
-- Attendance records use robust persisted timestamps and are audited.
-- Staff attendance is intentionally lightweight and optional: check-in/check-out rather than a compulsory HR attendance system.
-
-**Still deferred / not a blocker:**
-- Full staff attendance administration/monitoring.
-- Automatic missed-checkout processing.
-- Additional timezone hardening.
-
-**Decision:** Keep attendance simple and useful for the common school workflow. Do not turn teacher/staff attendance into an overbuilt payroll/HR subsystem.
-
 ### 6. Exams & Results — PRACTICALLY COMPLETE
-
-**Done / strong:**
-- Exam creation and academic-context validation.
-- Exam subjects and configurable assessment components.
-- Result entry with component/max-mark validation and automatic totals.
-- Configurable grading and ranking calculations.
-- Result workflow: DRAFT → FINAL → PUBLISHED with appropriate approval/publish permissions.
-- Published results are protected from ordinary editing.
-- Subject, class, and school ranking calculations.
-- Report-card workflow with academic and attendance summaries.
-- School-scoped access and audit controls across the result workflow.
-
-**Still deferred / not a blocker:**
-- Additional advanced grading/ranking variations beyond the current configurable engine.
-- Further reporting/print enhancements can be handled in Group 10.
-
-**Decision:** Group 6 is practically complete for the common 90% school examination workflow. Do not add complexity unless a real school need appears.
-
 ### 7. Fees, Billing & Payments — PRACTICALLY COMPLETE FOR CURRENT CORE WORKFLOW
-
-**Done / strong:**
-- Fee types and school-scoped fee assignments.
-- Student financial summaries based on actual completed payment allocations.
-- Cashier payment workflow with school/permission/student validation.
-- Automatic allocation of payments against outstanding fees.
-- Automatic receipt generation.
-- Payment history and payment detail transparency.
-- Refund/cancellation correction workflow with reasons and audit history.
-- Fee rollover with controlled carry/transfer decisions.
-- Financial reporting distinguishes allocated payments from unallocated credit.
-- Cashier-facing balances now follow the same allocation-based financial truth as the payment engine.
-
-**Deferred / planned:**
-- Payment Plans / installments require the later Prisma/PowerShell schema work already agreed. Do not implement a half-schema version.
-- Minimal transparent staff compensation/salary payment workflow will be added as planned finance functionality, without building enterprise payroll.
-
-**Known architectural cleanup:**
-- `src/lib/fees.ts` contains a legacy/duplicate payment creation helper, but the live cashier API uses `src/lib/payments.ts`. No risky refactor is required before moving forward; consolidate only when it provides a clear maintenance benefit.
-
-**Decision:** Group 7 is practically complete for the current core school finance workflow. Move forward while keeping Payment Plans and minimal staff pay as explicit planned work.
-
 ### 8. Communication — PRACTICALLY COMPLETE FOR CORE SCHOOL ANNOUNCEMENTS
-
-**Done / strong:**
-- School announcements can be created, edited, published, unpublished, and deleted.
-- Announcement audience can be targeted at everyone, students, parents, or teachers.
-- Published announcements are surfaced in the relevant student, parent, and teacher portals according to audience.
-- Announcement creation, editing, publication, unpublication, and deletion are audited.
-- Communication access is permission-controlled.
-- Announcement data is school-scoped through the authenticated user's school context.
-
-**Still deferred / not a blocker:**
-- Direct/private messaging between school staff, teachers, parents, and students is not implemented as a separate messaging system.
-- Email/SMS/push delivery integrations are not required for the current core workflow.
-- Advanced audience targeting and scheduled/broadcast campaigns can be added later if real schools require them.
-
-**Decision:** Group 8 is practically complete for the common 90% communication need: reliable school announcements visible to the correct portal audience. Do not build a full messaging/notification platform yet.
-
 ### 9. Portals — IN REVIEW
 
+### 10. Reports — PRACTICALLY COMPLETE FOR CURRENT CORE WORKFLOW
+
 **Done / strong:**
-- Student, parent, and teacher portal experiences exist in one school portal entry point.
-- Portal views are school-scoped and use the authenticated user's school context.
-- Students can see class, attendance, published results, fees, and school announcements.
-- Parents can see linked children, attendance, results, fees, and school announcements.
-- Teachers can see assigned classes, assigned subjects, and school announcements.
-- Parent access is restricted to linked students; teacher access is restricted to assigned classes/subjects.
-- Portal feature/access infrastructure exists for school-level portal configuration.
-- Portal entry now enforces the portal access control for student, parent, and teacher account types.
+- Academic results already assemble report-card data including student/class context, subject results, components, totals, grades, positions, attendance summary, and academic summary.
+- Attendance summary and class-summary workflows provide useful operational reporting.
+- Payment history/detail provides transparent payment, allocation, receipt, and balance information.
+- Receipts can now be printed as a focused school receipt rather than only viewed inside the application.
+- Printable receipts use the existing payment/allocation truth; no separate financial calculation or duplicate payment model was introduced.
 
-**Still under review / not a blocker yet:**
-- Portal feature-level controls beyond the core portal entry need to be verified against the actual UI before treating every feature flag as operational.
-- Financial display consistency between the portal and the allocation-based finance engine should be verified end-to-end, especially for unallocated credit and corrected/refunded payments.
-- Report-card access can be strengthened as part of the broader Group 10 reports review rather than duplicating report logic here.
+**Still deferred / not a blocker:**
+- Dedicated report-card print/export presentation can be improved later if real schools need a formal paper/PDF layout.
+- Broader management dashboards/BI are intentionally not part of the current core reporting scope.
 
-**Decision:** The core portals are substantially built and usable. Finish the verification of feature-level controls and financial truth, but do not expand the portals into a separate large product.
+**Decision:** Group 10 is practically complete for the current 90% school workflow. Move to end-to-end verification rather than adding more reporting features.
 
-### 10. Reports — NOT YET REVIEWED
-### 11. Administration & Trust — NOT YET REVIEWED
-### 12. Platform / Operations — NOT YET REVIEWED
+### 11. Administration & Trust — PRACTICALLY COMPLETE FOR CURRENT CORE WORKFLOW
+
+**Done / strong:**
+- School-scoped audit history and administrative controls.
+- Audit records use the authenticated user's school context.
+- Logout audit no longer relies on the first school in the database.
+- Sensitive session identifiers are not written into logout/unlock audit details.
+- Permission-controlled administrative actions and user/role controls exist.
+
+**Still deferred / not a blocker:**
+- Additional hardening can be handled during end-to-end verification when a concrete failure is found.
+
+**Decision:** Group 11 is substantially complete for the current core school workflow. Verify it through real user journeys rather than expanding administration into unnecessary complexity.
+
+### 12. Platform / Operations — PRACTICALLY COMPLETE FOR CURRENT PRODUCT STAGE
+
+**Done / strong:**
+- Platform provisioning is separated from normal school operation.
+- Provisioning is protected by a platform secret and validates organisation/application/school/owner context.
+- Provisioning reuses the normal school-registration path instead of creating a second school-creation system.
+- Demo deployment has a dedicated application/database boundary and a real-schema demo seed path.
+- School branding configuration is implemented through the existing School model and applied to the application UI.
+
+**Still deferred / not a blocker:**
+- Full automated tenant/domain provisioning belongs to the wider platform layer.
+- Public demo write-isolation/reset can be strengthened later with a disposable-session or reset mechanism.
+- Production deployment hardening should be completed during final environment verification.
+
+**Decision:** Group 12 is practically complete for the current product stage. Focus now on proving the whole school workflow end-to-end.
 
 ## Working Method
 
