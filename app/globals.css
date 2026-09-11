@@ -63,3 +63,37 @@ body {
 [data-school-theme="custom"] .bg-green-600 {
   background-color: var(--school-accent) !important;
 }
+
+.print-receipt {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .print-page {
+    min-height: auto !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .print-screen-content {
+    display: none !important;
+  }
+
+  .print-receipt {
+    display: block !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
