@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requirePermission } from "../../../src/lib/authorization";
 import { getSchool } from "../../../src/lib/school";
 import { db } from "../../../src/prisma/db";
+import { assignStudentToClass } from "../../../src/lib/student-class";
 
 function getNextStudentPermanentId(
   permanentIds: string[],
@@ -45,10 +46,30 @@ function toTemporalInstant(
 }
 
 export default async function NewStudentPage() {
-  await requirePermission("students.create");
+  const actor = await requirePermission("students.create");
 
   const school = await getSchool();
-  const classes = await db.orm.public.SchoolClass.all();
+  const [classes, sessions] = await Promise.all([
+    db.orm.public.SchoolClass.all(),
+    db.orm.public.AcademicSession.all(),
+  ]);
+
+  const activeSessionIds = new Set(
+    sessions
+      .filter(
+        (session) =>
+          session.schoolId === actor.schoolId &&
+          session.status === "ACTIVE",
+      )
+      .map((session) => session.id),
+  );
+
+  const availableClasses = classes.filter(
+    (schoolClass) =>
+      schoolClass.schoolId === actor.schoolId &&
+      schoolClass.status === "ACTIVE" &&
+      activeSessionIds.has(schoolClass.sessionId),
+  );
 
   async function createStudent(formData: FormData) {
     "use server";
@@ -97,6 +118,17 @@ export default async function NewStudentPage() {
       );
     }
 
+    const gender = genderValue.toUpperCase();
+
+    if (
+      gender &&
+      gender !== "MALE" &&
+      gender !== "FEMALE" &&
+      gender !== "OTHER"
+    ) {
+      throw new Error("Invalid gender.");
+    }
+
     let dateOfBirth = null;
 
     if (dateOfBirthValue) {
@@ -129,6 +161,35 @@ export default async function NewStudentPage() {
         throw new Error("Invalid class.");
       }
 
+      const classesForSchool =
+        await db.orm.public.SchoolClass.all();
+      const sessionsForSchool =
+        await db.orm.public.AcademicSession.all();
+
+      const selectedClass = classesForSchool.find(
+        (item) =>
+          item.id === parsedClassId &&
+          item.schoolId === user.schoolId &&
+          item.status === "ACTIVE",
+      );
+
+      if (!selectedClass) {
+        throw new Error("The selected class is not available.");
+      }
+
+      const selectedSession = sessionsForSchool.find(
+        (item) =>
+          item.id === selectedClass.sessionId &&
+          item.schoolId === user.schoolId &&
+          item.status === "ACTIVE",
+      );
+
+      if (!selectedSession) {
+        throw new Error(
+          "Students can only be registered into a class in the active academic session.",
+        );
+      }
+
       currentClassId = parsedClassId;
     }
 
@@ -150,8 +211,8 @@ export default async function NewStudentPage() {
         middleName: middleName || null,
         lastName,
         dateOfBirth,
-        gender: genderValue
-          ? (genderValue as
+        gender: gender
+          ? (gender as
               | "MALE"
               | "FEMALE"
               | "OTHER")
@@ -160,8 +221,44 @@ export default async function NewStudentPage() {
         address: address || null,
         admissionDate,
         status: "ACTIVE",
-        currentClassId,
+        currentClassId: null,
       });
+
+    if (currentClassId) {
+      const sessionsForSchool =
+        await db.orm.public.AcademicSession.all();
+      const selectedClass = (
+        await db.orm.public.SchoolClass.all()
+      ).find(
+        (item) =>
+          item.id === currentClassId &&
+          item.schoolId === user.schoolId,
+      );
+
+      if (!selectedClass) {
+        throw new Error("Selected class was not found.");
+      }
+
+      const selectedSession = sessionsForSchool.find(
+        (item) =>
+          item.id === selectedClass.sessionId &&
+          item.schoolId === user.schoolId &&
+          item.status === "ACTIVE",
+      );
+
+      if (!selectedSession) {
+        throw new Error("Active academic session not found.");
+      }
+
+      const startDate = admissionDate ?? selectedSession.startDate;
+
+      await assignStudentToClass(
+        student.id,
+        currentClassId,
+        selectedSession.id,
+        startDate,
+      );
+    }
 
     redirect(`/students/${student.id}`);
   }
@@ -350,7 +447,7 @@ export default async function NewStudentPage() {
                   Select class
                 </option>
 
-                {classes.map((schoolClass) => (
+                {availableClasses.map((schoolClass) => (
                   <option
                     key={schoolClass.id}
                     value={schoolClass.id}
@@ -362,6 +459,13 @@ export default async function NewStudentPage() {
                   </option>
                 ))}
               </select>
+
+              {availableClasses.length === 0 && (
+                <p className="mt-2 text-xs text-amber-700">
+                  No active classes are available in the active academic session yet.
+                  You can register the student without a class and assign one later.
+                </p>
+              )}
             </div>
 
             <div className="md:col-span-2">
