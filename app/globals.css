@@ -3,6 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --school-primary: #2563eb;
+  --school-secondary: #0f172a;
+  --school-accent: #16a34a;
+  --school-font: Arial, Helvetica, sans-serif;
 }
 
 @theme inline {
@@ -22,5 +26,40 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--school-font);
+}
+
+/* Existing UI uses Tailwind's blue utility classes in many modules.
+   Map those common brand accents to the school's configured identity
+   without requiring every screen to be rewritten. */
+[data-school-theme="custom"] .text-blue-600 {
+  color: var(--school-primary) !important;
+}
+
+[data-school-theme="custom"] .bg-blue-600 {
+  background-color: var(--school-primary) !important;
+}
+
+[data-school-theme="custom"] .hover\:bg-blue-700:hover {
+  background-color: color-mix(in srgb, var(--school-primary) 88%, black) !important;
+}
+
+[data-school-theme="custom"] .border-blue-500 {
+  border-color: var(--school-primary) !important;
+}
+
+[data-school-theme="custom"] .focus\:border-blue-500:focus {
+  border-color: var(--school-primary) !important;
+}
+
+[data-school-theme="custom"] .focus\:ring-blue-100:focus {
+  --tw-ring-color: color-mix(in srgb, var(--school-primary) 12%, transparent) !important;
+}
+
+[data-school-theme="custom"] .text-green-600 {
+  color: var(--school-accent) !important;
+}
+
+[data-school-theme="custom"] .bg-green-600 {
+  background-color: var(--school-accent) !important;
 }
