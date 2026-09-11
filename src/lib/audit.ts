@@ -52,15 +52,7 @@ export async function writeAuditLog({
   });
 }
 
-export async function getAuditLogs() {
-  const schools = await db.orm.public.School.all();
-
-  if (schools.length === 0) {
-    throw new Error("School not found");
-  }
-
-  const schoolId = schools[0].id;
-
+export async function getAuditLogs(schoolId: number) {
   const logs = await db.orm.public.AuditLog.all();
 
   return logs
