@@ -107,6 +107,15 @@ export default async function NewClassPage() {
       );
     }
 
+    if (
+      session.status !== "DRAFT" &&
+      session.status !== "ACTIVE"
+    ) {
+      throw new Error(
+        "Classes can only be created for a draft or active academic session.",
+      );
+    }
+
     let classTeacherId: number | null = null;
 
     if (classTeacherIdValue) {
