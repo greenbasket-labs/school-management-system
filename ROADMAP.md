@@ -259,12 +259,20 @@ This repository already contains substantial work across academic sessions, stud
 - Audit logging
 - School feature/configuration foundation
 
+### Finance hardening completed in the current pass
+
+- Payment allocation is part of the real payment workflow.
+- Financial reports use allocation-based collection figures.
+- Filtered financial reports calculate unallocated credit against the complete allocation history of each selected payment.
+- Payment details clearly distinguish historical allocations from allocations that currently affect the student's balance after refund/cancellation.
+- Payment correction preserves the original payment record and removes its financial effect from current balances through status handling.
+
 ### Areas still requiring completion or production hardening
 
 - Complete report-card / term-result workflow
 - Finish and integrate payment plans/installments at the database/workflow level
 - Finish production hardening of attendance settings/automation where genuinely needed
-- Verify finance workflows end-to-end, including correction/refund/cancellation
+- End-to-end finance verification with real-school scenarios
 - Verify portal workflows end-to-end
 - Improve activation/readiness checks where needed
 - Resolve existing TypeScript/build issues before treating the repository as production-ready
@@ -288,7 +296,7 @@ Working sequence:
 10. Payment Plans / Installments
 11. End-to-end finance verification
 
-Then move to the next highest-value unfinished school pain area.
+The next finance step is **Payment Plans / Installments**, followed by a focused end-to-end finance verification. After that, move to the next highest-value unfinished school pain area.
 
 ## 8. Development Method
 
