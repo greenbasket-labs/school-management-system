@@ -47,10 +47,12 @@ export default async function NewPaymentPage({
     students,
     assignments,
     payments,
+    paymentAllocations,
   ] = await Promise.all([
     db.orm.public.Student.all(),
     db.orm.public.FeeAssignment.all(),
     db.orm.public.Payment.all(),
+    db.orm.public.PaymentAllocation.all(),
   ]);
 
   const schoolStudents = students
@@ -69,11 +71,32 @@ export default async function NewPaymentPage({
       assignment.status === "ACTIVE",
   );
 
-  const schoolPayments = payments.filter(
-    (payment) =>
-      payment.schoolId === school.id &&
-      payment.status === "COMPLETED",
+  const completedPaymentIds = new Set(
+    payments
+      .filter(
+        (payment) =>
+          payment.schoolId === school.id &&
+          payment.status === "COMPLETED",
+      )
+      .map((payment) => payment.id),
   );
+
+  const allocatedByStudent = new Map<number, number>();
+
+  for (const allocation of paymentAllocations) {
+    if (
+      allocation.schoolId !== school.id ||
+      !completedPaymentIds.has(allocation.paymentId)
+    ) {
+      continue;
+    }
+
+    const current = allocatedByStudent.get(allocation.studentId) ?? 0;
+    allocatedByStudent.set(
+      allocation.studentId,
+      current + Number(allocation.amount),
+    );
+  }
 
   const studentOptions: StudentOption[] =
     schoolStudents.map((student) => {
@@ -88,16 +111,7 @@ export default async function NewPaymentPage({
           0,
         );
 
-      const totalPaid = schoolPayments
-        .filter(
-          (payment) =>
-            payment.studentId === student.id,
-        )
-        .reduce(
-          (total, payment) =>
-            total + Number(payment.amount),
-          0,
-        );
+      const totalPaid = allocatedByStudent.get(student.id) ?? 0;
 
       return {
         id: student.id,
@@ -107,7 +121,7 @@ export default async function NewPaymentPage({
             ? `${student.middleName} `
             : ""
         }${student.lastName}`,
-        balance: totalFees - totalPaid,
+        balance: Math.max(0, totalFees - totalPaid),
       };
     });
 
