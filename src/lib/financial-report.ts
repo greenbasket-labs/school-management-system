@@ -87,6 +87,20 @@ export async function getSchoolFinancialReport(
     );
   }
 
+  // A payment may be allocated to an assignment outside the current report
+  // filter. Calculate its total allocation across the whole school before
+  // calling any remainder "unallocated credit".
+  const allocatedByPayment = new Map<number, number>();
+  for (const allocation of paymentAllocations) {
+    if (allocation.schoolId !== schoolId || !completedPaymentIds.has(allocation.paymentId)) {
+      continue;
+    }
+    allocatedByPayment.set(
+      allocation.paymentId,
+      (allocatedByPayment.get(allocation.paymentId) ?? 0) + Number(allocation.amount),
+    );
+  }
+
   const totalBilled = activeAssignments.reduce(
     (sum, item) => sum + Number(item.amount),
     0,
@@ -105,11 +119,11 @@ export async function getSchoolFinancialReport(
     0,
   );
 
-  const totalCompletedPayments = completedPayments.reduce(
-    (sum, payment) => sum + Number(payment.amount),
+  const unallocatedCredit = completedPayments.reduce(
+    (sum, payment) =>
+      sum + Math.max(Number(payment.amount) - (allocatedByPayment.get(payment.id) ?? 0), 0),
     0,
   );
-  const unallocatedCredit = Math.max(totalCompletedPayments - totalCollected, 0);
 
   const paymentByMethod = completedPayments.reduce<Record<string, number>>(
     (summary, payment) => {
