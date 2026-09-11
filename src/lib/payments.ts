@@ -32,12 +32,9 @@ function toInstant(date: Date) {
 }
 
 /**
- * Calculate a student's current financial position.
- *
- * Balance:
- * Active fees - completed payments
- *
- * Refunded and cancelled payments are excluded.
+ * Calculate a student's current financial position from active fee assignments
+ * and completed payment allocations. Unallocated credit is not treated as a
+ * payment against fees, and refunded/cancelled payments do not remain paid.
  */
 export async function getStudentBalance(
   schoolId: number,
@@ -45,6 +42,7 @@ export async function getStudentBalance(
 ) {
   const assignments = await db.orm.public.FeeAssignment.all();
   const payments = await db.orm.public.Payment.all();
+  const paymentAllocations = await db.orm.public.PaymentAllocation.all();
 
   const totalFees = assignments
     .filter(
@@ -55,14 +53,25 @@ export async function getStudentBalance(
     )
     .reduce((total, assignment) => total + Number(assignment.amount), 0);
 
-  const totalPaid = payments
+  const completedPaymentIds = new Set(
+    payments
+      .filter(
+        (payment) =>
+          payment.schoolId === schoolId &&
+          payment.studentId === studentId &&
+          payment.status === "COMPLETED",
+      )
+      .map((payment) => payment.id),
+  );
+
+  const totalPaid = paymentAllocations
     .filter(
-      (payment) =>
-        payment.schoolId === schoolId &&
-        payment.studentId === studentId &&
-        payment.status === "COMPLETED",
+      (allocation) =>
+        allocation.schoolId === schoolId &&
+        allocation.studentId === studentId &&
+        completedPaymentIds.has(allocation.paymentId),
     )
-    .reduce((total, payment) => total + Number(payment.amount), 0);
+    .reduce((total, allocation) => total + Number(allocation.amount), 0);
 
   return {
     totalFees,
@@ -165,12 +174,24 @@ export async function createPayment(input: CreatePaymentInput) {
   );
 
   const paymentAllocations = await db.orm.public.PaymentAllocation.all();
+  const payments = await db.orm.public.Payment.all();
+  const completedPaymentIds = new Set(
+    payments
+      .filter(
+        (payment) =>
+          payment.schoolId === input.schoolId &&
+          payment.studentId === input.studentId &&
+          payment.status === "COMPLETED",
+      )
+      .map((payment) => payment.id),
+  );
   const allocatedByAssignment = new Map<number, number>();
 
   for (const allocation of paymentAllocations) {
     if (
       allocation.schoolId !== input.schoolId ||
-      allocation.studentId !== input.studentId
+      allocation.studentId !== input.studentId ||
+      !completedPaymentIds.has(allocation.paymentId)
     ) {
       continue;
     }
