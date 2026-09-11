@@ -24,9 +24,9 @@ const PORTAL_USER_TYPES: Record<PortalType, string> = {
   TEACHER: "TEACHER",
 };
 
-async function getSchoolId() {
-  const schools = await db.orm.public.School.all();
-  return schools[0]?.id ?? null;
+async function getSchoolIdForUser(userId: number) {
+  const users = await db.orm.public.User.all();
+  return users.find((item) => item.id === userId)?.schoolId ?? null;
 }
 
 export async function isPortalFeatureEnabled(
@@ -57,7 +57,7 @@ export async function requirePortal(
     throw new Error("Authentication required");
   }
 
-  const schoolId = await getSchoolId();
+  const schoolId = await getSchoolIdForUser(user.id);
 
   if (!schoolId || user.schoolId !== schoolId) {
     throw new Error("School access denied");
@@ -94,7 +94,7 @@ export async function getStudentPortalRecord(
   userId: number,
   studentId?: number,
 ) {
-  const schoolId = await getSchoolId();
+  const schoolId = await getSchoolIdForUser(userId);
   if (!schoolId) return null;
 
   const students = await db.orm.public.Student.all();
@@ -109,7 +109,7 @@ export async function getStudentPortalRecord(
 }
 
 export async function getParentPortalRecord(userId: number) {
-  const schoolId = await getSchoolId();
+  const schoolId = await getSchoolIdForUser(userId);
   if (!schoolId) return null;
 
   const parents = await db.orm.public.Parent.all();
@@ -149,7 +149,7 @@ export async function parentCanAccessStudent(
 }
 
 export async function getTeacherPortalRecord(userId: number) {
-  const schoolId = await getSchoolId();
+  const schoolId = await getSchoolIdForUser(userId);
   if (!schoolId) return null;
 
   const teachers = await db.orm.public.Teacher.all();
