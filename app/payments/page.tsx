@@ -329,6 +329,10 @@ export default async function PaymentsPage() {
                     <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                       Status
                     </th>
+
+                    <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Action
+                    </th>
                   </tr>
                 </thead>
 
@@ -412,6 +416,15 @@ export default async function PaymentsPage() {
                               Cancelled
                             </span>
                           )}
+                        </td>
+
+                        <td className="px-6 py-4 text-right">
+                          <Link
+                            href={`/payments/${payment.id}`}
+                            className="text-sm font-semibold text-slate-700 hover:text-slate-900"
+                          >
+                            View
+                          </Link>
                         </td>
                       </tr>
                     ),
