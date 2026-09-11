@@ -32,9 +32,9 @@ function formatValue(value: unknown) {
 }
 
 export default async function AuditPage() {
-  await requirePermission("audit.view");
+  const user = await requirePermission("audit.view");
 
-  const logs = await getAuditLogs();
+  const logs = await getAuditLogs(user.schoolId);
 
   const users = new Map<number, string>();
 
