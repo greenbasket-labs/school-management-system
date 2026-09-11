@@ -1,5 +1,7 @@
 export type PaymentPlanType = "FULL" | "PARTIAL" | "INSTALLMENT" | "CUSTOM";
 
+export type PaymentPlanStatus = "ACTIVE" | "COMPLETED" | "CANCELLED";
+
 export type PaymentInstallmentInput = {
   name: string;
   amount: number;
@@ -14,6 +16,13 @@ export type PaymentPlanCalculation = {
   planType: PaymentPlanType;
   totalAmount: number;
   installments: CalculatedInstallment[];
+};
+
+export type PaymentPlanSummary = {
+  totalAmount: number;
+  paidAmount: number;
+  outstandingAmount: number;
+  status: PaymentPlanStatus;
 };
 
 function cents(value: number) {
@@ -108,4 +117,30 @@ export function getInstallmentStatus(input: {
   if (paidCents >= amountCents) return "PAID" as const;
   if (paidCents > 0) return asOf.getTime() > input.dueDate.getTime() ? "OVERDUE_PARTIAL" as const : "PARTIAL" as const;
   return asOf.getTime() > input.dueDate.getTime() ? "OVERDUE" as const : "PENDING" as const;
+}
+
+export function summarizePaymentPlan(input: {
+  totalAmount: number;
+  paidAmount: number;
+  status?: PaymentPlanStatus;
+}): PaymentPlanSummary {
+  const totalCents = cents(input.totalAmount);
+  const paidCents = Math.min(totalCents, cents(input.paidAmount));
+  const outstandingCents = totalCents - paidCents;
+
+  if (input.status === "CANCELLED") {
+    return {
+      totalAmount: money(totalCents),
+      paidAmount: money(paidCents),
+      outstandingAmount: money(outstandingCents),
+      status: "CANCELLED",
+    };
+  }
+
+  return {
+    totalAmount: money(totalCents),
+    paidAmount: money(paidCents),
+    outstandingAmount: money(outstandingCents),
+    status: outstandingCents === 0 ? "COMPLETED" : "ACTIVE",
+  };
 }
