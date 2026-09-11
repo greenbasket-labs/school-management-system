@@ -123,6 +123,12 @@ model School {
   motto              String?
   principalName      String?
 
+  // School branding / presentation configuration.
+  primaryColor       String?
+  secondaryColor     String?
+  accentColor        String?
+  fontFamily         String?
+
   createdAt          TimestamptzString          @default(now())
   updatedAt          temporal.updatedAtString()
 
@@ -286,8 +292,8 @@ model PasswordRecovery {
   requestedAt         TimestamptzString          @default(now())
   verifiedAt          TimestamptzString?
   activateAt          TimestamptzString
-  expiresAt           TimestamptzString?
-  usedAt              TimestamptzString?
+  expiresAt            TimestamptzString?
+  usedAt               TimestamptzString?
 
   newDevice           Boolean                    @default(false)
 
@@ -397,7 +403,7 @@ model SchoolClass {
   name              String
   section            String?
   classTeacherId    Int?
-  status            RecordStatus               @default(ACTIVE)
+  status             RecordStatus               @default(ACTIVE)
 
   school            School                     @relation(fields:[schoolId], references:[id])
   session           AcademicSession            @relation(fields:[sessionId], references:[id])
@@ -1015,7 +1021,7 @@ model PaymentAllocation {
   student          Student                   @relation(fields:[studentId], references:[id])
 
   createdAt        TimestamptzString          @default(now())
-  updatedAt        temporal.updatedAtString()
+  updatedAt        TimestamptzString          @default(now())
 
   @@unique([paymentId, feeAssignmentId])
   @@index([schoolId])
@@ -1037,7 +1043,7 @@ model Receipt {
   payment       Payment                    @relation(fields:[paymentId], references:[id])
 
   createdAt     TimestamptzString          @default(now())
-  updatedAt     temporal.updatedAtString()
+  updatedAt     TimestamptzString          @default(now())
 
   @@index([schoolId])
 }
