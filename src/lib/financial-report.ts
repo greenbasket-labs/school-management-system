@@ -20,10 +20,11 @@ export async function getSchoolFinancialReport(
   schoolId: number,
   filters: FinancialReportFilters = {},
 ) {
-  const [assignments, payments, students, feeTypes, classes] =
+  const [assignments, payments, paymentAllocations, students, feeTypes, classes] =
     await Promise.all([
       db.orm.public.FeeAssignment.all(),
       db.orm.public.Payment.all(),
+      db.orm.public.PaymentAllocation.all(),
       db.orm.public.Student.all(),
       db.orm.public.FeeType.all(),
       db.orm.public.SchoolClass.all(),
@@ -63,11 +64,34 @@ export async function getSchoolFinancialReport(
     (item) => item.status === "REFUNDED",
   );
 
+  const completedPaymentIds = new Set(completedPayments.map((item) => item.id));
+  const selectedAssignmentIds = new Set(activeAssignments.map((item) => item.id));
+
+  const relevantAllocations = paymentAllocations.filter(
+    (allocation) =>
+      allocation.schoolId === schoolId &&
+      selectedAssignmentIds.has(allocation.feeAssignmentId) &&
+      completedPaymentIds.has(allocation.paymentId),
+  );
+
+  const paidByAssignment = new Map<number, number>();
+  const collectedByPayment = new Map<number, number>();
+  for (const allocation of relevantAllocations) {
+    paidByAssignment.set(
+      allocation.feeAssignmentId,
+      (paidByAssignment.get(allocation.feeAssignmentId) ?? 0) + Number(allocation.amount),
+    );
+    collectedByPayment.set(
+      allocation.paymentId,
+      (collectedByPayment.get(allocation.paymentId) ?? 0) + Number(allocation.amount),
+    );
+  }
+
   const totalBilled = activeAssignments.reduce(
     (sum, item) => sum + Number(item.amount),
     0,
   );
-  const totalCollected = completedPayments.reduce(
+  const totalCollected = relevantAllocations.reduce(
     (sum, item) => sum + Number(item.amount),
     0,
   );
@@ -75,37 +99,66 @@ export async function getSchoolFinancialReport(
     (sum, item) => sum + Number(item.amount),
     0,
   );
+  const outstanding = activeAssignments.reduce(
+    (sum, item) =>
+      sum + Math.max(Number(item.amount) - (paidByAssignment.get(item.id) ?? 0), 0),
+    0,
+  );
 
-  const paymentByMethod = schoolPayments.reduce<Record<string, number>>(
+  const totalCompletedPayments = completedPayments.reduce(
+    (sum, payment) => sum + Number(payment.amount),
+    0,
+  );
+  const unallocatedCredit = Math.max(totalCompletedPayments - totalCollected, 0);
+
+  const paymentByMethod = completedPayments.reduce<Record<string, number>>(
     (summary, payment) => {
-      summary[payment.method] =
-        (summary[payment.method] ?? 0) + Number(payment.amount);
+      const collected = collectedByPayment.get(payment.id) ?? 0;
+      if (collected > 0) {
+        summary[payment.method] = (summary[payment.method] ?? 0) + collected;
+      }
       return summary;
     },
     {},
   );
 
-  const feeTypeTotals = activeAssignments.reduce<Record<string, number>>(
-    (summary, assignment) => {
-      const feeType = feeTypes.find((item) => item.id === assignment.feeTypeId);
-      const key = feeType?.name ?? `Fee #${assignment.feeTypeId}`;
-      summary[key] = (summary[key] ?? 0) + Number(assignment.amount);
-      return summary;
-    },
-    {},
-  );
+  const feeTypeTotals = activeAssignments.reduce<
+    Record<string, { billed: number; collected: number; outstanding: number }>
+  >((summary, assignment) => {
+    const feeType = feeTypes.find((item) => item.id === assignment.feeTypeId);
+    const key = feeType?.name ?? `Fee #${assignment.feeTypeId}`;
+    const billed = Number(assignment.amount);
+    const collected = Math.min(paidByAssignment.get(assignment.id) ?? 0, billed);
+    const outstanding = Math.max(billed - collected, 0);
 
-  const classTotals = activeAssignments.reduce<Record<string, number>>(
-    (summary, assignment) => {
-      const schoolClass = classes.find((item) => item.id === assignment.classId);
-      const key = schoolClass
-        ? `${schoolClass.name}${schoolClass.section ? ` — ${schoolClass.section}` : ""}`
-        : "Unassigned";
-      summary[key] = (summary[key] ?? 0) + Number(assignment.amount);
-      return summary;
-    },
-    {},
-  );
+    if (!summary[key]) {
+      summary[key] = { billed: 0, collected: 0, outstanding: 0 };
+    }
+    summary[key].billed += billed;
+    summary[key].collected += collected;
+    summary[key].outstanding += outstanding;
+    return summary;
+  }, {});
+
+  const classTotals = activeAssignments.reduce<
+    Record<string, { billed: number; collected: number; outstanding: number }>
+  >((summary, assignment) => {
+    const schoolClass = classes.find((item) => item.id === assignment.classId);
+    const key = schoolClass
+      ? `${schoolClass.name}${schoolClass.section ? ` — ${schoolClass.section}` : ""}`
+      : "Unassigned";
+    const billed = Number(assignment.amount);
+    const collected = Math.min(paidByAssignment.get(assignment.id) ?? 0, billed);
+    const outstanding = Math.max(billed - collected, 0);
+
+    if (!summary[key]) {
+      summary[key] = { billed: 0, collected: 0, outstanding: 0 };
+    }
+    summary[key].billed += billed;
+    summary[key].collected += collected;
+    summary[key].outstanding += outstanding;
+    return summary;
+  }, {});
 
   return {
     schoolId,
@@ -114,7 +167,8 @@ export async function getSchoolFinancialReport(
       totalBilled,
       totalCollected,
       totalRefunded,
-      outstanding: Math.max(totalBilled - totalCollected, 0),
+      outstanding,
+      unallocatedCredit,
       collectionPercent:
         totalBilled > 0 ? (totalCollected / totalBilled) * 100 : 0,
       assignments: activeAssignments.length,
@@ -136,10 +190,11 @@ export async function getStudentFinancialStatement(
     studentId,
   });
 
-  const [students, assignments, payments, feeTypes] = await Promise.all([
+  const [students, assignments, payments, paymentAllocations, feeTypes] = await Promise.all([
     db.orm.public.Student.all(),
     db.orm.public.FeeAssignment.all(),
     db.orm.public.Payment.all(),
+    db.orm.public.PaymentAllocation.all(),
     db.orm.public.FeeType.all(),
   ]);
 
@@ -153,7 +208,8 @@ export async function getStudentFinancialStatement(
       item.schoolId === schoolId &&
       item.studentId === studentId &&
       (!filters.sessionId || item.sessionId === filters.sessionId) &&
-      (!filters.termId || item.termId === filters.termId),
+      (!filters.termId || item.termId === filters.termId) &&
+      (!filters.classId || item.classId === filters.classId),
   );
 
   const statementPayments = payments.filter(
@@ -162,6 +218,28 @@ export async function getStudentFinancialStatement(
       item.studentId === studentId &&
       inDateRange(item.paymentDate, filters.startDate, filters.endDate),
   );
+
+  const statementPaymentIds = new Set(
+    statementPayments
+      .filter((payment) => payment.status === "COMPLETED")
+      .map((payment) => payment.id),
+  );
+  const statementAssignmentIds = new Set(statementAssignments.map((item) => item.id));
+  const statementPaidByAssignment = new Map<number, number>();
+
+  for (const allocation of paymentAllocations) {
+    if (
+      allocation.schoolId !== schoolId ||
+      !statementAssignmentIds.has(allocation.feeAssignmentId) ||
+      !statementPaymentIds.has(allocation.paymentId)
+    ) {
+      continue;
+    }
+    statementPaidByAssignment.set(
+      allocation.feeAssignmentId,
+      (statementPaidByAssignment.get(allocation.feeAssignmentId) ?? 0) + Number(allocation.amount),
+    );
+  }
 
   return {
     student: {
@@ -172,14 +250,20 @@ export async function getStudentFinancialStatement(
         .join(" "),
     },
     totals: report.totals,
-    charges: statementAssignments.map((item) => ({
-      id: item.id,
-      fee: feeTypes.find((fee) => fee.id === item.feeTypeId)?.name ?? "Fee",
-      amount: Number(item.amount),
-      dueDate: item.dueDate,
-      status: item.status,
-      description: item.description,
-    })),
+    charges: statementAssignments.map((item) => {
+      const amount = Number(item.amount);
+      const paid = Math.min(statementPaidByAssignment.get(item.id) ?? 0, amount);
+      return {
+        id: item.id,
+        fee: feeTypes.find((fee) => fee.id === item.feeTypeId)?.name ?? "Fee",
+        amount,
+        paid,
+        outstanding: Math.max(amount - paid, 0),
+        dueDate: item.dueDate,
+        status: item.status,
+        description: item.description,
+      };
+    }),
     payments: statementPayments.map((item) => ({
       id: item.id,
       amount: Number(item.amount),
