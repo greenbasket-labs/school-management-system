@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { requirePermission } from "../../../../../../../src/lib/authorization";
-import { getAcademicSessionById } from "../../../../../../../src/lib/academic-sessions";
-import { applyFeeRollover, getFeeRolloverSummary } from "../../../../../../../src/lib/fee-rollover";
+import { requirePermission } from "../../../../../src/lib/authorization";
+import { getAcademicSessionById } from "../../../../../src/lib/academic-sessions";
+import { applyFeeRollover, getFeeRolloverSummary } from "../../../../../src/lib/fee-rollover";
 
 function money(value: number) {
   return `₦${value.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -18,7 +18,7 @@ export default async function RolloverFinancePage({ params }: { params: Promise<
   const targetSession = await getAcademicSessionById(targetSessionId, actor.schoolId);
   if (!targetSession || targetSession.status !== "DRAFT") redirect(`/academic-sessions/${targetSessionId}`);
 
-  const sessions = await import("../../../../../../../src/prisma/db").then(({ db }) => db.orm.public.AcademicSession.all());
+  const sessions = await import("../../../../../src/prisma/db").then(({ db }) => db.orm.public.AcademicSession.all());
   const sourceSession = sessions
     .filter((session) => session.schoolId === actor.schoolId && session.status === "COMPLETED" && String(session.endDate) < String(targetSession.startDate))
     .sort((a, b) => String(b.endDate).localeCompare(String(a.endDate)))[0];
