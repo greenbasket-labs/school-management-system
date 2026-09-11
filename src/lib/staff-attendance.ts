@@ -2,13 +2,11 @@ import { Temporal } from "@js-temporal/polyfill";
 import { db } from "../prisma/db";
 import { hasPermission } from "./permissions";
 import { writeAuditLog } from "./audit";
+import { getStaffAttendanceSettings } from "./staff-attendance-settings";
 
 export type StaffAttendanceStatus = "PRESENT" | "LATE" | "ABSENT" | "EXCUSED";
 
 const STAFF_TYPES = new Set(["OWNER", "ADMIN", "TEACHER", "CASHIER", "STAFF"]);
-const DEFAULT_START_HOUR = 8;
-const DEFAULT_START_MINUTE = 0;
-const DEFAULT_GRACE_MINUTES = 15;
 
 function nowInstant() {
   return Temporal.Now.instant().toString();
@@ -71,9 +69,10 @@ export async function staffCheckIn(input: {
   const existing = await getRecord(input.schoolId, input.userId, attendanceDate);
   if (existing?.checkInAt) throw new Error("Staff attendance has already been checked in for this day.");
 
-  const startHour = input.startHour ?? DEFAULT_START_HOUR;
-  const startMinute = input.startMinute ?? DEFAULT_START_MINUTE;
-  const graceMinutes = input.graceMinutes ?? DEFAULT_GRACE_MINUTES;
+  const configured = await getStaffAttendanceSettings(input.schoolId);
+  const startHour = input.startHour ?? configured.startHour;
+  const startMinute = input.startMinute ?? configured.startMinute;
+  const graceMinutes = input.graceMinutes ?? configured.graceMinutes;
   if (!Number.isInteger(startHour) || startHour < 0 || startHour > 23 || !Number.isInteger(startMinute) || startMinute < 0 || startMinute > 59 || !Number.isInteger(graceMinutes) || graceMinutes < 0 || graceMinutes > 1440) {
     throw new Error("Invalid staff attendance timing configuration.");
   }
