@@ -125,9 +125,65 @@ A group is practically complete when a real school can use its important workflo
 
 **Decision:** Continue focused review, but do not expand into HR/payroll or unnecessary staff-management features.
 
-### 5. Attendance — NOT YET REVIEWED
-### 6. Exams & Results — NOT YET REVIEWED
-### 7. Fees, Billing & Payments — IN PROGRESS
+### 5. Attendance — PRACTICALLY COMPLETE FOR CURRENT CORE WORKFLOW
+
+**Done / strong:**
+- Student attendance supports configurable one- or two-call daily attendance.
+- Attendance marking/edit permissions are enforced.
+- Student/class/school boundaries are validated.
+- Duplicate attendance entries are prevented unless explicitly editing.
+- Attendance records use robust persisted timestamps and are audited.
+- Staff attendance is intentionally lightweight and optional: check-in/check-out rather than a compulsory HR attendance system.
+
+**Still deferred / not a blocker:**
+- Full staff attendance administration/monitoring.
+- Automatic missed-checkout processing.
+- Additional timezone hardening.
+
+**Decision:** Keep attendance simple and useful for the common school workflow. Do not turn teacher/staff attendance into an overbuilt payroll/HR subsystem.
+
+### 6. Exams & Results — PRACTICALLY COMPLETE
+
+**Done / strong:**
+- Exam creation and academic-context validation.
+- Exam subjects and configurable assessment components.
+- Result entry with component/max-mark validation and automatic totals.
+- Configurable grading and ranking calculations.
+- Result workflow: DRAFT → FINAL → PUBLISHED with appropriate approval/publish permissions.
+- Published results are protected from ordinary editing.
+- Subject, class, and school ranking calculations.
+- Report-card workflow with academic and attendance summaries.
+- School-scoped access and audit controls across the result workflow.
+
+**Still deferred / not a blocker:**
+- Additional advanced grading/ranking variations beyond the current configurable engine.
+- Further reporting/print enhancements can be handled in Group 10.
+
+**Decision:** Group 6 is practically complete for the common 90% school examination workflow. Do not add complexity unless a real school need appears.
+
+### 7. Fees, Billing & Payments — PRACTICALLY COMPLETE FOR CURRENT CORE WORKFLOW
+
+**Done / strong:**
+- Fee types and school-scoped fee assignments.
+- Student financial summaries based on actual completed payment allocations.
+- Cashier payment workflow with school/permission/student validation.
+- Automatic allocation of payments against outstanding fees.
+- Automatic receipt generation.
+- Payment history and payment detail transparency.
+- Refund/cancellation correction workflow with reasons and audit history.
+- Fee rollover with controlled carry/transfer decisions.
+- Financial reporting distinguishes allocated payments from unallocated credit.
+- Cashier-facing balances now follow the same allocation-based financial truth as the payment engine.
+
+**Deferred / planned:**
+- Payment Plans / installments require the later Prisma/PowerShell schema work already agreed. Do not implement a half-schema version.
+- Minimal transparent staff compensation/salary payment workflow will be added as planned finance functionality, without building enterprise payroll.
+
+**Known architectural cleanup:**
+- `src/lib/fees.ts` contains a legacy/duplicate payment creation helper, but the live cashier API uses `src/lib/payments.ts`. No risky refactor is required before moving forward; consolidate only when it provides a clear maintenance benefit.
+
+**Decision:** Group 7 is practically complete for the current core school finance workflow. Move forward while keeping Payment Plans and minimal staff pay as explicit planned work.
+
 ### 8. Communication — NOT YET REVIEWED
 ### 9. Portals — NOT YET REVIEWED
 ### 10. Reports — NOT YET REVIEWED
