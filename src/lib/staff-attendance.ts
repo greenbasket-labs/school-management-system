@@ -97,6 +97,8 @@ export async function staffCheckIn(input: {
         correctedByUserId: null,
       });
 
+  if (!record) throw new Error("Unable to save staff attendance.");
+
   await writeAuditLog({
     schoolId: input.schoolId,
     userId: input.userId,
@@ -116,6 +118,7 @@ export async function staffCheckOut(input: { schoolId: number; userId: number; a
   const user = await getUser(input.schoolId, input.userId);
   if (!user) throw new Error("Staff account not found in this school.");
   assertStaffType(String(user.userType));
+  if (String(user.status) !== "ACTIVE") throw new Error("Staff account is not active.");
 
   const attendanceDate = input.attendanceDate ?? new Date();
   const existing = await getRecord(input.schoolId, input.userId, attendanceDate);
@@ -124,6 +127,7 @@ export async function staffCheckOut(input: { schoolId: number; userId: number; a
 
   const checkOutAt = nowInstant();
   const updated = await db.orm.public.StaffAttendanceRecord.where({ id: existing.id }).update({ checkOutAt, missedCheckout: false, updatedAt: checkOutAt });
+  if (!updated) throw new Error("Unable to save staff checkout.");
 
   await writeAuditLog({
     schoolId: input.schoolId,
