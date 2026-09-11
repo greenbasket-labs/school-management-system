@@ -49,6 +49,12 @@ export default async function NewTermPage({
     redirect("/academic-sessions");
   }
 
+  if (session.status === "COMPLETED" || session.status === "ARCHIVED") {
+    throw new Error(
+      "Terms cannot be added to a completed or archived academic session.",
+    );
+  }
+
   async function createTerm(formData: FormData) {
     "use server";
 
@@ -59,6 +65,15 @@ export default async function NewTermPage({
 
     if (!currentSession) {
       throw new Error("Academic session not found.");
+    }
+
+    if (
+      currentSession.status === "COMPLETED" ||
+      currentSession.status === "ARCHIVED"
+    ) {
+      throw new Error(
+        "Terms cannot be added to a completed or archived academic session.",
+      );
     }
 
     const termValue = String(
@@ -115,12 +130,23 @@ export default async function NewTermPage({
       );
     }
 
+    if (
+      Temporal.Instant.compare(startDate, currentSession.startDate) < 0 ||
+      Temporal.Instant.compare(endDate, currentSession.endDate) > 0
+    ) {
+      throw new Error(
+        "Term dates must fall within the academic session dates.",
+      );
+    }
+
     const terms = await db.orm.public.Term.all();
 
-    const duplicate = terms.find(
-      (item) =>
-        item.sessionId === sessionId &&
-        item.term === termValue,
+    const sessionTerms = terms.filter(
+      (item) => item.sessionId === sessionId,
+    );
+
+    const duplicate = sessionTerms.find(
+      (item) => item.term === termValue,
     );
 
     if (duplicate) {
@@ -129,15 +155,24 @@ export default async function NewTermPage({
       );
     }
 
+    const overlaps = sessionTerms.some(
+      (item) =>
+        Temporal.Instant.compare(startDate, item.endDate) < 0 &&
+        Temporal.Instant.compare(endDate, item.startDate) > 0,
+    );
+
+    if (overlaps) {
+      throw new Error(
+        "Term dates cannot overlap another term in the same academic session.",
+      );
+    }
+
     const wantsActive =
       formData.get("isActive") === "on";
 
     if (wantsActive) {
-      for (const existingTerm of terms) {
-        if (
-          existingTerm.sessionId === sessionId &&
-          existingTerm.isActive
-        ) {
+      for (const existingTerm of sessionTerms) {
+        if (existingTerm.isActive) {
           await db.orm.public.Term
             .where({ id: existingTerm.id })
             .update({
