@@ -73,7 +73,6 @@ export async function unlockCurrentSession(password: string) {
     entityId: userSession.id,
     newValue: {
       reason: "INACTIVITY_TIMEOUT",
-      sessionKey: userSession.sessionKey,
     },
   });
 
