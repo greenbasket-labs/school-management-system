@@ -201,7 +201,25 @@ A group is practically complete when a real school can use its important workflo
 
 **Decision:** Group 8 is practically complete for the common 90% communication need: reliable school announcements visible to the correct portal audience. Do not build a full messaging/notification platform yet.
 
-### 9. Portals — NOT YET REVIEWED
+### 9. Portals — IN REVIEW
+
+**Done / strong:**
+- Student, parent, and teacher portal experiences exist in one school portal entry point.
+- Portal views are school-scoped and use the authenticated user's school context.
+- Students can see class, attendance, published results, fees, and school announcements.
+- Parents can see linked children, attendance, results, fees, and school announcements.
+- Teachers can see assigned classes, assigned subjects, and school announcements.
+- Parent access is restricted to linked students; teacher access is restricted to assigned classes/subjects.
+- Portal feature/access infrastructure exists for school-level portal configuration.
+- Portal entry now enforces the portal access control for student, parent, and teacher account types.
+
+**Still under review / not a blocker yet:**
+- Portal feature-level controls beyond the core portal entry need to be verified against the actual UI before treating every feature flag as operational.
+- Financial display consistency between the portal and the allocation-based finance engine should be verified end-to-end, especially for unallocated credit and corrected/refunded payments.
+- Report-card access can be strengthened as part of the broader Group 10 reports review rather than duplicating report logic here.
+
+**Decision:** The core portals are substantially built and usable. Finish the verification of feature-level controls and financial truth, but do not expand the portals into a separate large product.
+
 ### 10. Reports — NOT YET REVIEWED
 ### 11. Administration & Trust — NOT YET REVIEWED
 ### 12. Platform / Operations — NOT YET REVIEWED
