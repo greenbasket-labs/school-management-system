@@ -184,7 +184,23 @@ A group is practically complete when a real school can use its important workflo
 
 **Decision:** Group 7 is practically complete for the current core school finance workflow. Move forward while keeping Payment Plans and minimal staff pay as explicit planned work.
 
-### 8. Communication — NOT YET REVIEWED
+### 8. Communication — PRACTICALLY COMPLETE FOR CORE SCHOOL ANNOUNCEMENTS
+
+**Done / strong:**
+- School announcements can be created, edited, published, unpublished, and deleted.
+- Announcement audience can be targeted at everyone, students, parents, or teachers.
+- Published announcements are surfaced in the relevant student, parent, and teacher portals according to audience.
+- Announcement creation, editing, publication, unpublication, and deletion are audited.
+- Communication access is permission-controlled.
+- Announcement data is school-scoped through the authenticated user's school context.
+
+**Still deferred / not a blocker:**
+- Direct/private messaging between school staff, teachers, parents, and students is not implemented as a separate messaging system.
+- Email/SMS/push delivery integrations are not required for the current core workflow.
+- Advanced audience targeting and scheduled/broadcast campaigns can be added later if real schools require them.
+
+**Decision:** Group 8 is practically complete for the common 90% communication need: reliable school announcements visible to the correct portal audience. Do not build a full messaging/notification platform yet.
+
 ### 9. Portals — NOT YET REVIEWED
 ### 10. Reports — NOT YET REVIEWED
 ### 11. Administration & Trust — NOT YET REVIEWED
