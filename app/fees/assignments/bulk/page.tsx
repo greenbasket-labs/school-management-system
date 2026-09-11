@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requirePermission } from "../../../../../src/lib/authorization";
+import { requirePermission } from "../../../../src/lib/authorization";
 import {
   createFeeAssignment,
   getActiveFeeTypes,
@@ -8,8 +8,8 @@ import {
   getClassesForSession,
   getStudentsForFeeAssignment,
   getTermsForSession,
-} from "../../../../../src/lib/fees";
-import { getSchool } from "../../../../../src/lib/school";
+} from "../../../../src/lib/fees";
+import { getSchool } from "../../../../src/lib/school";
 
 type PageProps = {
   searchParams: Promise<{ error?: string; success?: string }>;
