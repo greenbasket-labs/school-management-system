@@ -1,14 +1,15 @@
 import { db } from "../prisma/db";
+import { getCurrentUser } from "./current-user";
 import { writeAuditLog } from "./audit";
 
 async function getSchoolId() {
-  const schools = await db.orm.public.School.all();
+  const currentUser = await getCurrentUser();
 
-  if (schools.length === 0) {
+  if (!currentUser?.schoolId) {
     throw new Error("School not found");
   }
 
-  return schools[0].id;
+  return currentUser.schoolId;
 }
 
 export async function getAnnouncements() {
