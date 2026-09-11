@@ -1,32 +1,51 @@
 import { db } from "../prisma/db";
 import { writeAuditLog } from "./audit";
 
-export async function getStudents() {
-  return db.orm.public.Student.all();
+export async function getStudents(schoolId: number) {
+  const students = await db.orm.public.Student.all();
+
+  return students
+    .filter((student) => student.schoolId === schoolId)
+    .sort((a, b) => {
+      const lastNameCompare = a.lastName.localeCompare(b.lastName);
+
+      if (lastNameCompare !== 0) return lastNameCompare;
+
+      return a.firstName.localeCompare(b.firstName);
+    });
 }
 
-export async function getStudentById(studentId: number) {
+export async function getStudentById(
+  studentId: number,
+  schoolId: number,
+) {
   const students = await db.orm.public.Student.all();
 
   return students.find(
-    (student) => student.id === studentId,
+    (student) =>
+      student.id === studentId &&
+      student.schoolId === schoolId,
   );
 }
 
 export async function getStudentByPermanentId(
   permanentId: string,
+  schoolId: number,
 ) {
   const students = await db.orm.public.Student.all();
 
   return students.find(
-    (student) => student.permanentId === permanentId,
+    (student) =>
+      student.permanentId === permanentId &&
+      student.schoolId === schoolId,
   );
 }
 
 export async function searchStudents(
+  schoolId: number,
   search: string,
 ) {
-  const students = await db.orm.public.Student.all();
+  const students = await getStudents(schoolId);
 
   const normalizedSearch = search
     .trim()
@@ -59,6 +78,7 @@ export async function searchStudents(
 }
 
 export async function createStudent(input: {
+  schoolId: number;
   firstName: string;
   middleName?: string;
   lastName: string;
@@ -67,14 +87,6 @@ export async function createStudent(input: {
   phone?: string;
   address?: string;
 }) {
-  const schools = await db.orm.public.School.all();
-
-  if (schools.length === 0) {
-    throw new Error("School not found");
-  }
-
-  const school = schools[0];
-
   const firstName = input.firstName.trim();
   const middleName = input.middleName?.trim() || null;
   const lastName = input.lastName.trim();
@@ -96,6 +108,13 @@ export async function createStudent(input: {
     throw new Error("Invalid gender");
   }
 
+  const schools = await db.orm.public.School.all();
+  const school = schools.find((item) => item.id === input.schoolId);
+
+  if (!school) {
+    throw new Error("School not found");
+  }
+
   const students = await db.orm.public.Student.all();
 
   const year = new Date().getFullYear();
@@ -104,6 +123,8 @@ export async function createStudent(input: {
   let highestNumber = 0;
 
   for (const student of students) {
+    if (student.schoolId !== input.schoolId) continue;
+
     const match = student.permanentId.match(pattern);
 
     if (match) {
@@ -114,13 +135,17 @@ export async function createStudent(input: {
     }
   }
 
-  const permanentId = `STU-${year}-${String(
-    highestNumber + 1,
-  ).padStart(5, "0")}`;
+  let sequence = highestNumber + 1;
+  let permanentId = `STU-${year}-${String(sequence).padStart(5, "0")}`;
+
+  while (students.some((student) => student.permanentId === permanentId)) {
+    sequence += 1;
+    permanentId = `STU-${year}-${String(sequence).padStart(5, "0")}`;
+  }
 
   const student =
     await db.orm.public.Student.create({
-      schoolId: school.id,
+      schoolId: input.schoolId,
       permanentId,
       firstName,
       middleName,
@@ -135,7 +160,7 @@ export async function createStudent(input: {
     });
 
   await writeAuditLog({
-    schoolId: school.id,
+    schoolId: input.schoolId,
     action: "CREATE",
     entity: "Student",
     entityId: student.id,
