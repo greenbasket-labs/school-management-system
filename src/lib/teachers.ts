@@ -1,5 +1,6 @@
 import { db } from "../prisma/db";
 import { writeAuditLog } from "./audit";
+import { getCurrentUser } from "./current-user";
 
 export async function getTeachers(schoolId: number) {
   const teachers = await db.orm.public.Teacher.all();
@@ -97,14 +98,13 @@ export async function createTeacher(input: {
   address?: string;
   status?: "ACTIVE" | "INACTIVE";
 }) {
-  const schools = await db.orm.public.School.all();
+  const currentUser = await getCurrentUser();
 
-  if (schools.length === 0) {
+  if (!currentUser?.schoolId) {
     throw new Error("School not found");
   }
 
-  const school = schools[0];
-
+  const schoolId = currentUser.schoolId;
   const firstName = input.firstName.trim();
   const middleName = input.middleName?.trim() || null;
   const lastName = input.lastName.trim();
@@ -133,6 +133,8 @@ export async function createTeacher(input: {
   let highestNumber = 0;
 
   for (const teacher of teachers) {
+    if (teacher.schoolId !== schoolId) continue;
+
     const match = teacher.permanentId.match(pattern);
 
     if (match) {
@@ -149,7 +151,7 @@ export async function createTeacher(input: {
 
   const teacher =
     await db.orm.public.Teacher.create({
-      schoolId: school.id,
+      schoolId,
       permanentId,
       firstName,
       middleName,
@@ -161,7 +163,8 @@ export async function createTeacher(input: {
     });
 
   await writeAuditLog({
-    schoolId: school.id,
+    schoolId,
+    userId: currentUser.id,
     action: "CREATE",
     entity: "Teacher",
     entityId: teacher.id,
