@@ -17,14 +17,14 @@ export async function getStudents(schoolId: number) {
 
 export async function getStudentById(
   studentId: number,
-  schoolId: number,
+  schoolId?: number,
 ) {
   const students = await db.orm.public.Student.all();
 
   return students.find(
     (student) =>
       student.id === studentId &&
-      student.schoolId === schoolId,
+      (schoolId == null || student.schoolId === schoolId),
   );
 }
 
