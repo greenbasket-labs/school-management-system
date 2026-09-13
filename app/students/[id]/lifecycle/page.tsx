@@ -206,7 +206,7 @@ export default async function StudentLifecyclePage({
               <input
                 name="effectiveDate"
                 type="date"
-                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
               />
             </label>
 
@@ -217,7 +217,7 @@ export default async function StudentLifecyclePage({
                 required
                 rows={4}
                 placeholder="Explain why this lifecycle action is being applied."
-                className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
               />
             </label>
 
