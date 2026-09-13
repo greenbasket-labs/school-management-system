@@ -6,7 +6,7 @@ import {
   getTeacherPortalStudents,
   type PortalFeature,
   type PortalType,
-} from "../../../../../src/lib/portal-access";
+} from "../../../../src/lib/portal-access";
 
 const PORTALS: PortalType[] = ["STUDENT", "PARENT", "TEACHER"];
 const FEATURES: PortalFeature[] = [
